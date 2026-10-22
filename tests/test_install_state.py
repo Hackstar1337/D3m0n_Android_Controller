@@ -67,3 +67,31 @@ def test_atomic_promotion_and_recovery(tmp_path: Path):
 def test_unknown_stage_rejected(tmp_path: Path):
     with pytest.raises(ValueError):
         StageLogger(tmp_path, "unknown")
+
+
+def test_virtualenv_interpreter_symlink_is_recorded_by_checkout_location(tmp_path):
+    from ops.install_state import output_records, outputs_valid
+    repo = tmp_path / 'checkout'
+    binary = repo / '.venv' / 'bin' / 'python'
+    binary.parent.mkdir(parents=True)
+    interpreter = tmp_path / 'system-python'
+    interpreter.write_bytes(b'fake-interpreter-v1')
+    try:
+        binary.symlink_to(interpreter)
+    except (PermissionError, NotImplementedError, OSError):
+        pytest.skip('Host does not allow creating a test symlink.')
+    records = output_records([binary],root=repo)
+    assert Path(records[0]['path']) == Path('.venv/bin/python')
+    assert outputs_valid(records,root=repo)
+    interpreter.write_bytes(b'fake-interpreter-v2')
+    assert not outputs_valid(records,root=repo)
+
+
+def test_output_record_does_not_allow_lexically_external_paths(tmp_path):
+    from ops.install_state import output_records
+    repo=tmp_path / 'checkout'
+    repo.mkdir()
+    external=tmp_path / 'outside'
+    external.write_text('not-an-owned-output')
+    with pytest.raises(ValueError):
+        output_records([external],root=repo)

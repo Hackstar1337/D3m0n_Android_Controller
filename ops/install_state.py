@@ -145,21 +145,25 @@ def output_records(paths: Iterable[Path], *, root: Path | None = None) -> list[d
     records: list[dict[str, Any]] = []
     for raw in paths:
         path = Path(raw)
+        # POSIX virtualenv bin/python is normally a symlink outside the checkout.
+        # Keep its lexical checkout location, but hash the actual interpreter bytes.
+        named_path = Path(os.path.abspath(path))
+        recorded_path = str(named_path.relative_to(root.resolve())) if root else str(named_path)
         if path.is_file():
             records.append({
-                "path": str(path.resolve().relative_to(root.resolve())) if root else str(path.resolve()),
+                "path": recorded_path,
                 "kind": "file",
                 "sha256": sha256_file(path),
                 "size": path.stat().st_size,
             })
         elif path.is_dir():
             records.append({
-                "path": str(path.resolve().relative_to(root.resolve())) if root else str(path.resolve()),
+                "path": recorded_path,
                 "kind": "directory",
                 "fingerprint": fingerprint_tree(path),
             })
         else:
-            records.append({"path": str(path), "kind": "missing"})
+            records.append({"path": recorded_path, "kind": "missing"})
     return records
 
 
