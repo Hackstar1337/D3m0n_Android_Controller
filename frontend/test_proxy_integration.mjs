@@ -1,0 +1,24 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const front = fs.readFileSync('src/views/PhoneAdminView.vue','utf8');
+const server = fs.readFileSync('../ops/server.py','utf8');
+const shell = fs.readFileSync('src/App.vue','utf8');
+const nav = fs.readFileSync('src/composables/shellNavigation.ts','utf8');
+assert.ok(front.includes("import ProxyManagerPanel from '@/components/ProxyManagerPanel.vue'"));
+assert.ok(front.includes("has('proxies') ? 'proxies'"));
+assert.match(front, /<ProxyManagerPanel v-if="subTab === 'proxies'"\s*\/>/);
+// Desktop redesign: workspace navigation moved to the sidebar and shares one ref with the workspace.
+assert.ok(front.includes('const subTab = phoneSubTab'), 'workspace uses the shared sidebar navigation ref');
+assert.match(shell, /\{ id: 'phone:proxies', label: 'Proxy manager', icon: 'globe', phone: 'proxies' \}/, 'sidebar exposes Proxy manager');
+for (const view of ['multi', 'single', 'windows', 'fleet']) assert.ok(shell.includes(`phone: '${view}'`), `sidebar exposes ${view}`);
+assert.ok(shell.includes('phoneSubTab.value = item.phone'), 'sidebar navigation drives the workspace view');
+assert.match(nav, /export type PhoneSubTab = .*'single'.*'multi'.*'windows'.*'fleet'.*'ai'.*'proxies'/s, 'navigation keeps original tabs and adds Fleet AI');
+assert.ok(!/localStorage|sessionStorage/.test(nav), 'navigation state is memory-only');
+assert.ok(front.includes("const INTENT_KEY = 'd3m0n.stream-intent.v1'"));
+assert.ok(front.includes('const multiMounted = ref('));
+assert.ok(front.includes('async function reconcileStreams()'));
+assert.ok(server.indexOf('app.include_router(proxy_manager_router)') < server.indexOf("app.mount('/'"));
+assert.ok(server.includes('app.add_middleware(D3m0nDomainProtection)'));
+assert.ok(server.includes('app.include_router(android_h264_router)'));
+assert.ok(server.includes('app.include_router(fleet_files_router)'));
+console.log('PROXY_TAB_ROUTER_AND_STREAM_INTEGRATION_TESTS=PASS');

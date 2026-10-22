@@ -1,0 +1,16 @@
+{
+  "client_path": "/usr/local/libexec/d3m0n-ai-worker-client",
+  "config_path": "/etc/d3m0n-ai-worker/runtime.json",
+  "mode": "wsl2-host-isolation",
+  "prefix": "/opt/d3m0n-ai-worker",
+  "sdk_commit": "301856138c6edeb2ae692bfab85b279ace520e59",
+  "sdk_root": "/opt/d3m0n-ai-worker/sdk",
+  "sdk_version": "0.7.0",
+  "socket_path": "/run/d3m0n-ai-worker.sock",
+  "source_root": "/opt/d3m0n-ai-worker/source",
+  "venv_root": "/opt/d3m0n-ai-worker/venv",
+  "worker_group": "ash",
+  "worker_user": "ash",
+  "wrapper_path": "/usr/local/libexec/d3m0n-ai-worker",
+  "wsl_distro": "D3m0nFleet"
+}

@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   D3m0n in the droid — desktop design system (v2)
+   One coherent token set for every view. Legacy tokens (--bg-card, --text-1…)
+   are mapped onto it so upstream views inherit the same palette.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+
+  /* Neutrals: graphite with a faint cool cast */
+  --ui-bg: #0a0c0f;
+  --ui-bg-elevated: #0e1115;
+  --ui-surface-1: #12161b;
+  --ui-surface-2: #161b21;
+  --ui-surface-3: #1c2229;
+  --ui-surface-hover: #222932;
+  --ui-surface-sunken: #0c0f13;
+  --ui-border: #232a32;
+  --ui-border-strong: #2e3741;
+  --ui-border-hover: #3a4551;
+  --ui-border-focus: #3fd0a8;
+
+  --ui-text-1: #e8ecf1;
+  --ui-text-2: #b8c1cc;
+  --ui-text-3: #8a94a2;
+  --ui-text-4: #5f6977;
+
+  /* Single restrained brand accent */
+  --ui-accent: #3fd0a8;
+  --ui-accent-hover: #5adbb7;
+  --ui-accent-strong: #2bb791;
+  --ui-accent-soft: rgba(63, 208, 168, 0.11);
+  --ui-accent-line: rgba(63, 208, 168, 0.34);
+  --ui-on-accent: #03130d;
+
+  /* Semantic */
+  --ui-info: #67aaff;
+  --ui-info-soft: rgba(103, 170, 255, 0.11);
+  --ui-warn: #f0b44c;
+  --ui-warn-soft: rgba(240, 180, 76, 0.11);
+  --ui-danger: #f26d6d;
+  --ui-danger-soft: rgba(242, 109, 109, 0.11);
+  --ui-success: #46cf8b;
+  --ui-success-soft: rgba(70, 207, 139, 0.11);
+
+  /* Typography */
+  --ui-font: 'Inter', 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --ui-mono: 'JetBrains Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --ui-fs-2xs: 10.5px;
+  --ui-fs-xs: 11.5px;
+  --ui-fs-sm: 12.5px;
+  --ui-fs-md: 13.5px;
+  --ui-fs-lg: 15px;
+  --ui-fs-xl: 18px;
+  --ui-fs-2xl: 22px;
+
+  /* 4px spacing grid */
+  --ui-1: 4px;
+  --ui-2: 8px;
+  --ui-3: 12px;
+  --ui-4: 16px;
+  --ui-5: 20px;
+  --ui-6: 24px;
+  --ui-8: 32px;
+
+  --ui-radius-xs: 4px;
+  --ui-radius-sm: 6px;
+  --ui-radius: 8px;
+  --ui-radius-lg: 10px;
+
+  --ui-control-h: 30px;
+  --ui-control-h-sm: 26px;
+  --ui-control-h-lg: 36px;
+
+  --ui-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --ui-shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.45);
+  --ui-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --ui-sidebar-w: 236px;
+  --ui-sidebar-w-collapsed: 60px;
+  --ui-topbar-h: 52px;
+  --ui-content-pad-x: 24px;
+
+  /* Legacy tokens mapped to the design system */
+  --bg-base: var(--ui-bg);
+  --bg-card: var(--ui-surface-1);
+  --bg-deep: var(--ui-surface-sunken);
+  --border: var(--ui-border);
+  --text-1: var(--ui-text-1);
+  --text-2: var(--ui-text-2);
+  --text-3: var(--ui-text-3);
+  --text-4: var(--ui-text-4);
+  --accent: var(--ui-accent);
+  --accent-lt: #7fe6c9;
+}
+
+@media (max-width: 1440px) {
+  :root { --ui-content-pad-x: 20px; --ui-sidebar-w: 220px; }
+}
+@media (max-width: 1280px) {
+  :root { --ui-content-pad-x: 16px; }
+}
+
+html, body { background: var(--ui-bg); }
+body {
+  margin: 0;
+  color: var(--ui-text-1);
+  font-family: var(--ui-font);
+  font-size: var(--ui-fs-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
+}
+::selection { background: rgba(63, 208, 168, 0.28); color: var(--ui-text-1); }
+* { scrollbar-width: thin; scrollbar-color: #2b333d transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: #2a313a; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background-color: #3a434e; }
+*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner { background: transparent; }
+:focus-visible { outline: 2px solid var(--ui-border-focus); outline-offset: 2px; }
+code, kbd, samp, pre, .mono { font-family: var(--ui-mono); }
+
+/* Base controls — zero-specificity so component and inline styles still win */
+:where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']), select, textarea) {
+  font-family: inherit;
+  color: var(--ui-text-1);
+  background-color: var(--ui-surface-sunken);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-sm);
+  transition: border-color 0.15s var(--ui-ease), box-shadow 0.15s var(--ui-ease), background-color 0.15s var(--ui-ease);
+}
+:where(input, select, textarea):hover:not(:disabled):not(:focus) { border-color: var(--ui-border-hover); }
+:where(input, select, textarea):focus { outline: none; border-color: var(--ui-border-focus); box-shadow: 0 0 0 3px rgba(63, 208, 168, 0.15); }
+:where(input, textarea)::placeholder { color: var(--ui-text-4); }
+:where(select) { cursor: pointer; }
+:where(select option) { background: var(--ui-surface-2); color: var(--ui-text-1); }
+:where(input[type='checkbox'], input[type='radio']) { accent-color: var(--ui-accent); width: 14px; height: 14px; cursor: pointer; }
+:where(button) { font-family: inherit; }
+:where(button:disabled, input:disabled, select:disabled) { cursor: not-allowed; }
+:where(a) { color: inherit; }
+:where(h1, h2, h3, h4) { letter-spacing: -0.01em; }
+
+/* ---------- Buttons ---------- */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: var(--ui-control-h); padding: 0 12px;
+  border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface-3); color: var(--ui-text-1);
+  font-size: var(--ui-fs-sm); font-weight: 560; line-height: 1; white-space: nowrap;
+  text-decoration: none; cursor: pointer; user-select: none;
+  transition: background-color 0.15s var(--ui-ease), border-color 0.15s var(--ui-ease), color 0.15s var(--ui-ease), opacity 0.15s;
+}
+.ui-btn:hover:not(:disabled) { background: var(--ui-surface-hover); border-color: var(--ui-border-hover); }
+.ui-btn:active:not(:disabled) { transform: translateY(0.5px); }
+.ui-btn:disabled { opacity: 0.42; }
+.ui-btn svg { width: 15px; height: 15px; flex: none; }
+.ui-btn--primary { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); font-weight: 650; }
+.ui-btn--primary:hover:not(:disabled) { background: var(--ui-accent-hover); border-color: var(--ui-accent-hover); }
+.ui-btn--accent { background: var(--ui-accent-soft); border-color: var(--ui-accent-line); color: #8eead0; }
+.ui-btn--accent:hover:not(:disabled) { background: rgba(63, 208, 168, 0.18); border-color: rgba(63, 208, 168, 0.5); }
+.ui-btn--danger { background: var(--ui-danger-soft); border-color: rgba(242, 109, 109, 0.38); color: #ff9d9d; }
+.ui-btn--danger:hover:not(:disabled) { background: rgba(242, 109, 109, 0.19); border-color: rgba(242, 109, 109, 0.55); }
+.ui-btn--ghost { background: transparent; border-color: transparent; color: var(--ui-text-2); }
+.ui-btn--ghost:hover:not(:disabled) { background: var(--ui-surface-3); border-color: transparent; color: var(--ui-text-1); }
+.ui-btn--sm { height: var(--ui-control-h-sm); padding: 0 9px; font-size: var(--ui-fs-xs); gap: 5px; }
+.ui-btn--sm svg { width: 13px; height: 13px; }
+.ui-btn--lg { height: var(--ui-control-h-lg); padding: 0 16px; font-size: var(--ui-fs-md); }
+.ui-btn--icon { width: var(--ui-control-h); padding: 0; }
+.ui-btn--icon.ui-btn--sm { width: var(--ui-control-h-sm); }
+.ui-btn--block { width: 100%; }
+
+/* ---------- Panels ---------- */
+.ui-panel { background: var(--ui-surface-1); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); min-width: 0; }
+.ui-panel__header { display: flex; align-items: center; gap: var(--ui-3); padding: 12px var(--ui-4); border-bottom: 1px solid var(--ui-border); min-height: 48px; }
+.ui-panel__title { margin: 0; font-size: var(--ui-fs-md); font-weight: 650; color: var(--ui-text-1); }
+.ui-panel__subtitle { margin: 2px 0 0; font-size: var(--ui-fs-xs); color: var(--ui-text-3); }
+.ui-panel__actions { margin-left: auto; display: flex; align-items: center; gap: var(--ui-2); }
+.ui-panel__body { padding: var(--ui-4); }
+.ui-section-label { font-size: var(--ui-fs-2xs); font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ui-text-4); }
+
+/* ---------- Badges / status ---------- */
+.ui-badge {
+  display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px;
+  border: 1px solid var(--ui-border-strong); border-radius: 999px;
+  background: var(--ui-surface-2); color: var(--ui-text-2);
+  font-size: var(--ui-fs-2xs); font-weight: 600; line-height: 1; white-space: nowrap;
+}
+.ui-badge--accent, .ui-badge--success { color: #8ee9c6; background: var(--ui-success-soft); border-color: rgba(70, 207, 139, 0.32); }
+.ui-badge--info { color: #a7cbff; background: var(--ui-info-soft); border-color: rgba(103, 170, 255, 0.32); }
+.ui-badge--warn { color: #f6cd82; background: var(--ui-warn-soft); border-color: rgba(240, 180, 76, 0.32); }
+.ui-badge--danger { color: #ffa3a3; background: var(--ui-danger-soft); border-color: rgba(242, 109, 109, 0.34); }
+.ui-badge--muted { color: var(--ui-text-3); }
+.ui-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+
+/* ---------- Forms ---------- */
+.ui-field { display: grid; gap: 6px; min-width: 0; }
+.ui-label, .ui-field > label { font-size: var(--ui-fs-xs); font-weight: 600; color: var(--ui-text-2); }
+.ui-hint { font-size: var(--ui-fs-2xs); color: var(--ui-text-4); line-height: 1.45; }
+.ui-input, .ui-select { height: var(--ui-control-h); padding: 0 10px; font-size: var(--ui-fs-sm); width: 100%; min-width: 0; }
+.ui-select { padding-right: 26px; }
+.ui-input--sm, .ui-select--sm { height: var(--ui-control-h-sm); font-size: var(--ui-fs-xs); }
+textarea.ui-input { height: auto; padding: 8px 10px; line-height: 1.5; resize: vertical; }
+.ui-search { position: relative; display: inline-flex; align-items: center; min-width: 0; }
+.ui-search svg { position: absolute; left: 9px; width: 14px; height: 14px; color: var(--ui-text-4); pointer-events: none; }
+.ui-search input { padding-left: 30px; }
+
+/* Toggle switch built on a real checkbox */
+.ui-switch { display: inline-flex; align-items: center; gap: 8px; font-size: var(--ui-fs-xs); color: var(--ui-text-2); cursor: pointer; user-select: none; white-space: nowrap; }
+.ui-switch input[type='checkbox'] {
+  appearance: none; -webkit-appearance: none; margin: 0; position: relative; flex: none;
+  width: 28px; height: 16px; border-radius: 999px; background: #2a323c; border: 1px solid #36404b;
+  transition: background-color 0.15s var(--ui-ease), border-color 0.15s var(--ui-ease);
+}
+.ui-switch input[type='checkbox']::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%;
+  background: #aab4c0; transition: transform 0.15s var(--ui-ease), background-color 0.15s;
+}
+.ui-switch input[type='checkbox']:checked { background: var(--ui-accent-strong); border-color: var(--ui-accent); }
+.ui-switch input[type='checkbox']:checked::after { transform: translateX(12px); background: #fff; }
+
+/* ---------- Toolbars ---------- */
+.ui-toolbar { display: flex; align-items: center; gap: var(--ui-2); flex-wrap: wrap; min-width: 0; }
+.ui-toolbar__group { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ui-toolbar__spacer { flex: 1 1 auto; }
+.ui-vdivider { width: 1px; height: 20px; background: var(--ui-border-strong); margin: 0 4px; flex: none; }
+
+.ui-segmented { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--ui-radius-sm); background: var(--ui-surface-sunken); border: 1px solid var(--ui-border-strong); }
+.ui-segmented > button { height: 24px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; color: var(--ui-text-3); font-size: var(--ui-fs-xs); font-weight: 600; cursor: pointer; }
+.ui-segmented > button:hover { color: var(--ui-text-1); }
+.ui-segmented > button.is-active { background: var(--ui-surface-3); color: var(--ui-text-1); box-shadow: 0 0 0 1px var(--ui-border-strong); }
+
+/* ---------- Tables ---------- */
+.ui-table-wrap { overflow: auto; border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); background: var(--ui-surface-1); }
+.ui-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--ui-fs-sm); }
+.ui-table th {
+  position: sticky; top: 0; z-index: 1; text-align: left; white-space: nowrap;
+  padding: 0 12px; height: 34px; background: var(--ui-surface-2);
+  border-bottom: 1px solid var(--ui-border); color: var(--ui-text-3);
+  font-size: var(--ui-fs-2xs); font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.ui-table td { padding: 0 12px; height: 44px; border-bottom: 1px solid var(--ui-border); color: var(--ui-text-2); vertical-align: middle; }
+.ui-table tbody tr:last-child td { border-bottom: 0; }
+.ui-table tbody tr { transition: background-color 0.12s; }
+.ui-table tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
+.ui-table tbody tr.is-selected td { background: rgba(63, 208, 168, 0.06); }
+.ui-table tbody tr.is-active td { background: rgba(63, 208, 168, 0.1); }
+.ui-table .cell-check { width: 40px; padding-right: 0; }
+.ui-table .cell-actions { text-align: right; white-space: nowrap; }
+
+/* ---------- Callouts / KPI / empty ---------- */
+.ui-callout { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--ui-radius); border: 1px solid var(--ui-border-strong); background: var(--ui-surface-2); color: var(--ui-text-2); font-size: var(--ui-fs-xs); line-height: 1.5; }
+.ui-callout svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+.ui-callout strong { color: var(--ui-text-1); font-weight: 650; }
+.ui-callout--info { border-color: rgba(103, 170, 255, 0.28); background: rgba(103, 170, 255, 0.06); }
+.ui-callout--info svg { color: var(--ui-info); }
+.ui-callout--warn { border-color: rgba(240, 180, 76, 0.3); background: rgba(240, 180, 76, 0.06); }
+.ui-callout--warn svg { color: var(--ui-warn); }
+.ui-callout--danger { border-color: rgba(242, 109, 109, 0.32); background: rgba(242, 109, 109, 0.07); }
+.ui-callout--danger svg { color: var(--ui-danger); }
+.ui-callout--success { border-color: rgba(70, 207, 139, 0.3); background: rgba(70, 207, 139, 0.06); }
+.ui-callout--success svg { color: var(--ui-success); }
+
+.ui-kpi { display: grid; gap: 2px; min-width: 0; }
+.ui-kpi__value { font-size: var(--ui-fs-xl); font-weight: 650; color: var(--ui-text-1); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.ui-kpi__label { font-size: var(--ui-fs-2xs); color: var(--ui-text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+.ui-empty { display: grid; place-items: center; gap: 6px; padding: 40px 16px; text-align: center; color: var(--ui-text-3); font-size: var(--ui-fs-sm); }
+.ui-empty strong { color: var(--ui-text-1); font-size: var(--ui-fs-md); }
+
+.ui-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--ui-border-strong); background: var(--ui-surface-2); font-family: var(--ui-mono); font-size: 10px; color: var(--ui-text-2); }
+.ui-mono { font-family: var(--ui-mono); font-size: 0.94em; }
+.ui-muted { color: var(--ui-text-3); }
+.ui-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+
+/* ---------- Legacy utility classes used by upstream views ---------- */
+.card { background: var(--ui-surface-1); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); padding: var(--ui-4); }
+.stat-card { background: var(--ui-surface-1); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); padding: 12px 16px; text-align: left; }
+.stat-card h3 { font-size: 22px; font-weight: 650; margin: 0; color: var(--ui-text-1); }
+.stat-card p { font-size: var(--ui-fs-2xs); color: var(--ui-text-3); margin: 4px 0 0; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: var(--ui-control-h); padding: 0 12px; border-radius: var(--ui-radius-sm); font-size: var(--ui-fs-sm); font-weight: 560; cursor: pointer; border: 1px solid var(--ui-border-strong); background: var(--ui-surface-3); color: var(--ui-text-1); transition: background-color 0.15s, border-color 0.15s; }
+.btn:hover:not(:disabled) { background: var(--ui-surface-hover); border-color: var(--ui-border-hover); }
+.btn:disabled { opacity: 0.45; }
+.btn-primary { background: var(--ui-accent); border-color: var(--ui-accent); color: var(--ui-on-accent); font-weight: 650; }
+.btn-primary:hover:not(:disabled) { background: var(--ui-accent-hover); border-color: var(--ui-accent-hover); }
+.btn-sm { height: var(--ui-control-h-sm); padding: 0 9px; font-size: var(--ui-fs-xs); }
+
+/* Harmonise the most common hard-coded legacy surfaces inside upstream pages.
+   Scoped to .legacy-view so D3m0n components keep their own styling. */
+.legacy-view [style*='background: #1a1f2e'], .legacy-view [style*='background:#1a1f2e'] { background-color: var(--ui-surface-3) !important; }
+.legacy-view [style*='border: 1px solid #2a3044'], .legacy-view [style*='border:1px solid #2a3044'] { border-color: var(--ui-border-strong) !important; }
+.legacy-view [style*='background: #0f172a'], .legacy-view [style*='background:#0f172a'],
+.legacy-view [style*='background: #111827'], .legacy-view [style*='background:#111827'],
+.legacy-view [style*='background: #0a0e14'], .legacy-view [style*='background:#0a0e14'],
+.legacy-view [style*='background: #070b10'], .legacy-view [style*='background:#070b10'] { background-color: var(--ui-surface-sunken) !important; }
+.legacy-view [style*='background: #1e293b'], .legacy-view [style*='background:#1e293b'] { background-color: var(--ui-surface-3) !important; }
+.legacy-view .text-indigo-400 { color: #8fd9c3; }
+.legacy-view .bg-indigo-500\/10 { background-color: var(--ui-accent-soft); }
+.legacy-view h1, .legacy-view h2 { color: var(--ui-text-1); }

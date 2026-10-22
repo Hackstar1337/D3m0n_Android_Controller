@@ -1,0 +1,198 @@
+{
+  "anthropic": {
+    "summary": "Official Anthropic cloud API setup for D3m0n. No Anthropic account, key, live request, or paid inference is configured or tested in this workspace; Ollama remains the fresh-chat default.",
+    "steps": [
+      "Open D3m0n AI settings and select Anthropic.",
+      "Use the official HTTPS base URL https://api.anthropic.com; do not use an arbitrary proxy for a cloud key.",
+      "Create or obtain an Anthropic API key in Claude Console, enter it through the masked replacement-only field, and save it; use ANTHROPIC_API_KEY only as an environment fallback when intentionally configured.",
+      "Discover available models through Anthropic GET /v1/models or enter an account-approved current model ID; do not hardcode a stale catalogue.",
+      "Run the dashboard metadata/readiness Test, understanding that it is not a paid inference test, then make Anthropic the default only if desired; the change applies to new chats."
+    ],
+    "links": [
+      {
+        "label": "Get started with Claude",
+        "href": "https://platform.claude.com/docs/en/get-started"
+      },
+      {
+        "label": "Claude API overview",
+        "href": "https://platform.claude.com/docs/en/api/overview"
+      },
+      {
+        "label": "List models API",
+        "href": "https://platform.claude.com/docs/en/api/models/list"
+      },
+      {
+        "label": "API key settings in Claude Console",
+        "href": "https://platform.claude.com/settings/keys"
+      }
+    ]
+  },
+  "claude-code": {
+    "summary": "Anthropic's online terminal coding agent. It requires an Anthropic subscription, Console/API account, or supported enterprise/cloud configuration; it is separate from the locally installed Ollama provider and is not an offline model.",
+    "steps": [
+      "Confirm a supported environment (Windows 10 1809+/Server 2019+, Ubuntu 20.04+, macOS 13+, Debian 10+, or Alpine 3.19+), 4 GB+ RAM, x64/ARM64, an internet connection, and a project directory.",
+      "Install in the project environment: Linux/WSL/macOS uses `curl -fsSL https://claude.ai/install.sh | bash`; native Windows PowerShell uses `irm https://claude.ai/install.ps1 | iex`; WinGet uses `winget install Anthropic.ClaudeCode`. Git for Windows is optional but recommended for native Windows Bash support.",
+      "Open a new terminal and run `claude --version`; use `claude doctor` for read-only installation/settings diagnostics.",
+      "Start `claude` in the project directory and complete browser login with Claude Pro/Max/Team/Enterprise or use a Claude Console/API or supported enterprise/cloud setup. `claude auth login --console` selects Console/API billing. Never put credentials in dashboard code, URLs, logs, or browser storage.",
+      "Use `claude auth status` for redacted authentication status, `claude auth logout` to log out, and `/login` inside a session to re-authenticate. An approved `ANTHROPIC_API_KEY` changes credential precedence and may change billing.",
+      "For a cautious first session, retain manual permissions or use plan mode; review commands and edits. `claude -p` runs a one-off query, `claude -c` continues the latest conversation, and `claude -r` resumes one.",
+      "For dashboard readiness, report CLI presence/version and redacted auth/diagnostic status separately. Do not infer model readiness from CLI presence or authentication, and do not run paid inference, alter phones, download models, or expose keys in a metadata test.",
+      "Treat the existing d3m0n-ollama.service/qwen3.5:4b loopback Ollama setup as a separate on-device provider; no Claude Code installation, login, account, or credentials are assumed by this guide."
+    ],
+    "links": [
+      {
+        "label": "Claude Code overview",
+        "href": "https://docs.anthropic.com/en/docs/claude-code"
+      },
+      {
+        "label": "Quickstart",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/quickstart"
+      },
+      {
+        "label": "Advanced setup and system requirements",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/setup"
+      },
+      {
+        "label": "Authentication",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/iam"
+      },
+      {
+        "label": "CLI reference",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/cli-reference"
+      },
+      {
+        "label": "Configure permissions",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/permissions"
+      },
+      {
+        "label": "Manage costs",
+        "href": "https://docs.anthropic.com/en/docs/claude-code/costs"
+      }
+    ]
+  },
+  "ollama": {
+    "summary": "Use the existing Ubuntu user service d3m0n-ollama.service at loopback http://127.0.0.1:11434 with the installed qwen3.5:4b model. Cloud access is disabled and no API key is required for local requests.",
+    "steps": [
+      "Set the provider base URL to http://127.0.0.1:11434 and keep the provider local-only.",
+      "Set the default model to the exact installed tag qwen3.5:4b; do not guess additional model names.",
+      "Leave the API-key field empty because the local Ollama API does not require authentication.",
+      "Use metadata/readiness checks only with authorization: discover installed models via GET /api/tags and loaded models via GET /api/ps; do not infer readiness from a cloud request.",
+      "If the service is unavailable, have the service owner manage the existing d3m0n-ollama.service; do not reinstall, expose the port, pull models, or enable cloud access as part of dashboard setup."
+    ],
+    "links": [
+      {
+        "label": "Ollama API introduction",
+        "href": "https://docs.ollama.com/api/introduction"
+      },
+      {
+        "label": "Ollama authentication",
+        "href": "https://docs.ollama.com/api/authentication"
+      },
+      {
+        "label": "List local models API",
+        "href": "https://docs.ollama.com/api/tags"
+      },
+      {
+        "label": "Ollama FAQ",
+        "href": "https://docs.ollama.com/faq"
+      },
+      {
+        "label": "Ollama Linux documentation",
+        "href": "https://docs.ollama.com/linux"
+      },
+      {
+        "label": "OpenAI compatibility",
+        "href": "https://docs.ollama.com/api/openai-compatibility"
+      }
+    ]
+  },
+  "on-device": {
+    "summary": "This provider runs inside the upstream Android ghost-app through Chaquopy and its Kotlin OnDeviceLLM runtime. It is not a second Ollama server and is unavailable in this Ubuntu-hosted Python process.",
+    "steps": [
+      "Use Ollama / qwen3.5:4b for the current wireless-ADB fleet; it is the installed and verified local option.",
+      "For true phone-resident inference, build/install the compatible upstream ghost-app with the com.ghostinthedroid.app.ondevice.OnDeviceLLM runtime and a supported registered model.",
+      "Run the agent inside that Android app so the java/Chaquopy bridge exists. Merely installing a model on this Ubuntu PC does not enable this provider.",
+      "Android 9, device ABI, model licensing, storage and runtime compatibility must be confirmed separately. Test readiness here reports the bridge is missing; no automatic phone install is performed."
+    ],
+    "links": [
+      {
+        "label": "Upstream Android Agent",
+        "href": "https://github.com/ghost-in-the-droid/android-agent"
+      },
+      {
+        "label": "Chaquopy Android Python",
+        "href": "https://chaquo.com/chaquopy/doc/current/"
+      },
+      {
+        "label": "MediaPipe LLM Inference",
+        "href": "https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/android"
+      }
+    ]
+  },
+  "openrouter": {
+    "summary": "Hosted OpenAI-compatible model gateway; not installed or configured here. Setup requires a user-owned account, bounded API key, official HTTPS base URL, and current model slug.",
+    "steps": [
+      "Create an OpenRouter account and API key at https://openrouter.ai/keys; set a credit limit and keep the key private.",
+      "Select OpenRouter in D3m0n AI settings and use https://openrouter.ai/api/v1 as the official base URL.",
+      "Enter the key only in the masked replacement field and save; use the explicit clear control to remove it. Never expose it in URLs, logs, browser storage, bundles, or errors.",
+      "Discover or select a current model slug from GET https://openrouter.ai/api/v1/models; do not assume a fixed catalog.",
+      "Save the provider and optionally make it the default for new chats; existing active chats remain unchanged.",
+      "Use Test only as metadata/readiness validation: it must not perform paid inference, and success does not prove model inference or credits."
+    ],
+    "links": [
+      {
+        "label": "OpenRouter Quickstart",
+        "href": "https://openrouter.ai/docs/quickstart"
+      },
+      {
+        "label": "OpenRouter Authentication",
+        "href": "https://openrouter.ai/docs/api_reference/authentication"
+      },
+      {
+        "label": "OpenRouter Models API",
+        "href": "https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties"
+      },
+      {
+        "label": "OpenRouter Data Collection",
+        "href": "https://openrouter.ai/docs/guides/privacy/data-collection"
+      },
+      {
+        "label": "OpenRouter Zero Data Retention",
+        "href": "https://openrouter.ai/docs/guides/features/zdr"
+      }
+    ]
+  },
+  "vllm": {
+    "summary": "Configure vLLM only when an operator has separately provisioned a compatible host, model, and private OpenAI-compatible /v1 endpoint. vLLM is not installed or verified in this workspace; existing Ollama is a separate provider.",
+    "steps": [
+      "Check the official vLLM hardware and installation matrix for the intended Linux or supported accelerator host; do not install on an occupied GPU.",
+      "Create an isolated Python environment and install the hardware-specific vLLM build following the version-matched official instructions; the stable quickstart example uses Python 3.12 and uv for NVIDIA.",
+      "Choose a supported model and start it with `vllm serve <exact-model-id>`; model downloads and host provisioning are operator actions outside this guide.",
+      "Expose the documented OpenAI-compatible API, normally at port 8000, and optionally configure `--api-key` or `VLLM_API_KEY` with network controls; the key does not protect every endpoint.",
+      "In D3m0n, enter the operator-supplied private base URL ending in `/v1`, the exact served model ID, and a key only if the server requires one; do not use the Ollama URL.",
+      "Use the dashboard metadata/readiness test or an approved private client to check `/v1/models` and chat compatibility; no live request or model download was performed for this guide."
+    ],
+    "links": [
+      {
+        "label": "vLLM installation",
+        "href": "https://docs.vllm.ai/en/stable/getting_started/installation/"
+      },
+      {
+        "label": "vLLM quickstart",
+        "href": "https://docs.vllm.ai/en/stable/getting_started/quickstart/"
+      },
+      {
+        "label": "OpenAI-compatible server",
+        "href": "https://docs.vllm.ai/en/stable/serving/online_serving/openai_compatible_server/"
+      },
+      {
+        "label": "Supported models",
+        "href": "https://docs.vllm.ai/en/stable/models/supported_models/"
+      },
+      {
+        "label": "Serve CLI reference",
+        "href": "https://docs.vllm.ai/en/stable/cli/serve/"
+      }
+    ]
+  }
+}

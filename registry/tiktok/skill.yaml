@@ -1,0 +1,78 @@
+name: tiktok
+display_name: TikTok
+description: TikTok automation skill — open, navigate, search, upload your own drafts
+version: "1.0.0"
+app_package: com.zhiliaoapp.musically
+author: C-K-Loan
+license: MIT
+
+exports:
+  actions:
+    - name: open_app
+      description: Launch TikTok and wait for home screen
+    - name: navigate_to_profile
+      description: Navigate to the Profile tab
+    - name: tap_search
+      description: Tap the search icon to open search
+    - name: type_and_search
+      description: Type a query and execute search
+      params:
+        query: { type: string, required: true, default: "#cats" }
+    - name: dismiss_popup
+      description: Detect and dismiss TikTok-specific popups
+  workflows:
+    - name: upload_video
+      description: Upload a video with caption and hashtags
+      steps: [open_app, upload_flow]
+
+popup_detectors:
+  - detect: "Continue editing"
+    button: "Save draft"
+    label: "Draft resume overlay"
+  - detect: "connect with people"
+    button: "Don't allow"
+    label: "Contacts access popup"
+  - detect: "access to your Facebook"
+    button: "Don't allow"
+    label: "Facebook friends access popup"
+  - detect: "Make TikTok Shop more relevant"
+    button: "Select"
+    label: "TikTok Shop relevance"
+  - detect: "shared collections"
+    button: "Not now"
+    label: "Shared collections popup"
+  - detect: "Turn on notifications"
+    button: "Not now"
+    label: "Notifications popup"
+  - detect: "security checkup"
+    button: "Close"
+    label: "Security checkup popup"
+  - detect: 'content-desc="Close"'
+    button: "Close"
+    label: "Close dialog"
+  - detect: "Skip"
+    button: "Skip"
+    label: "Skip dialog"
+  - detect: "Learn more"
+    button: "_back"
+    label: "Invisible promo overlay"
+    method: "back"
+
+default_params:
+  actions:
+    type_and_search:
+      query: "#cats"
+  workflows:
+    upload_video:
+      video_path: "/sdcard/DCIM/video.mp4"
+      caption: "Check this out!"
+      hashtags: "#fyp #viral"
+      as_draft: false
+    publish_draft:
+      draft_tag: ""
+
+tested_on:
+  - device: ASUS ROG Phone II
+    android: "12"
+  - device: Samsung Galaxy A15
+    android: "14"

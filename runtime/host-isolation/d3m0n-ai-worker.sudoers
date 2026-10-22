@@ -1,0 +1,6 @@
+# Installed as /etc/sudoers.d/d3m0n-ai-worker (root:root, 0440); the installer
+# substitutes the validated non-root operator account for this placeholder.
+# No wildcard, shell, interpreter, SETENV, or arbitrary argument is permitted.
+Cmnd_Alias D3M0N_AI_WORKER_CMDS = /usr/local/libexec/d3m0n-ai-worker, /usr/local/libexec/d3m0n-ai-worker --probe
+Defaults!D3M0N_AI_WORKER_CMDS env_reset, !setenv
+__OPERATOR__ ALL=(root) NOPASSWD: D3M0N_AI_WORKER_CMDS

@@ -1,0 +1,14 @@
+{
+  "framework": "mobilerun",
+  "commit": "301856138c6edeb2ae692bfab85b279ace520e59",
+  "version": "0.7.0",
+  "portal_mode": "disabled",
+  "auto_setup": false,
+  "telemetry": false,
+  "tracing": false,
+  "trajectory": "none",
+  "vision": false,
+  "max_active_workers": 3,
+  "forbidden_tools": ["shell", "python", "code", "arbitrary_url", "mcp"],
+  "activation": "requires_d3m0n_owner_lease_and_guarded_native_bridge"
+}

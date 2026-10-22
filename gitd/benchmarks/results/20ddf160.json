@@ -1,0 +1,38 @@
+{
+  "id": "20ddf160",
+  "suite": "ghost_bench",
+  "model": "gemma3:4b",
+  "provider": "ollama",
+  "device": "emulator-5554",
+  "status": "completed",
+  "success_rate": 0.0,
+  "total_tasks": 1,
+  "passed": 0,
+  "total_time_s": 3.1,
+  "started_at": 1792512678.5841072,
+  "finished_at": 1792512681.646037,
+  "current_task": "",
+  "results": [
+    {
+      "task_id": "OpenAppSettings",
+      "goal": "Open the Settings app.",
+      "model": "gemma3:4b",
+      "device": "emulator-5554",
+      "score": 0.0,
+      "reason": "'com.android.settings' not found in output (got: )",
+      "steps": 0,
+      "time_s": 3.1,
+      "agent_log": [
+        {
+          "type": "session",
+          "session_id": "fb0ecae2"
+        },
+        {
+          "type": "error",
+          "content": "Ollama not reachable at localhost:11434. Start it: ollama serve"
+        }
+      ],
+      "error": ""
+    }
+  ]
+}

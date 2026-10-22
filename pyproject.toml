@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ghost-in-the-droid"
+version = "1.5.1"
+description = "Give any AI agent an Android body. Open-source phone automation via ADB — tap, swipe, type, run skills, scale across devices."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = {text = "MIT"}
+keywords = ["android", "adb", "automation", "ghost", "agent", "mcp", "fastapi", "phone-farm"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: FastAPI",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "psutil>=5.9",
+    "docker>=7.0",
+    "openai>=1.0",
+    "mcp>=1.20,<2.0",
+    "langfuse>=2.0,<3.0",
+    "pillow>=12.3.0",
+    "websocket-client>=1.8",
+    "websockets>=12",
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.urls]
+Homepage = "https://ghostinthedroid.com"
+Repository = "https://github.com/ghost-in-the-droid/android-agent"
+Documentation = "https://ghostinthedroid.com/getting-started/installation/"
+Issues = "https://github.com/ghost-in-the-droid/android-agent/issues"
+
+[project.optional-dependencies]
+# Additional direct dependencies of the customized protected dashboard.
+d3m0n = ["cryptography>=43.0", "httpx>=0.27", "python-multipart>=0.0.20"]
+llm = ["anthropic>=0.30"]
+analytics = ["google-analytics-data>=0.18"]
+ocr = ["rapidocr-onnxruntime>=1.3"]
+langchain = ["langchain-core>=0.3"]
+llamaindex = ["llama-index-core>=0.11"]
+test = ["playwright>=1.40", "pytest>=7.0", "langchain-core>=0.3", "llama-index-core>=0.11"]
+all = ["ghost-in-the-droid[d3m0n,llm,analytics,ocr,langchain,llamaindex,test]"]
+
+[project.scripts]
+ghost = "gitd.ghost_cli:main"
+android-agent = "gitd.cli:main"
+gitd = "gitd.cli:main"
+ghost-in-the-droid = "gitd.cli:main"
+android-agent-mcp = "gitd.mcp_server:main"
+
+[tool.setuptools.packages.find]
+include = ["gitd*", "integrations*", "ops*", "ai_contracts*"]
+
+[tool.setuptools.package-data]
+ops = ["scrcpy-server-v5.0.1.jar", "SCRCPY-LICENSE.txt"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.format]
+quote-style = "double"

@@ -1,0 +1,1384 @@
+---
+// Ghost in the Droid Landing Page — "Phantom Circuit" aesthetic
+// Standalone page, does not use Starlight layout
+---
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<title>Ghost in the Droid — Android Body for AI Agents</title>
+	<meta name="description" content="Summon a ghost into your Android. Open-source framework for controlling real phones via ADB. No root required. No cloud dependency. Pure automation." />
+	<meta property="og:title" content="Ghost in the Droid — Android Body for AI Agents" />
+	<meta property="og:description" content="Open-source Python framework for automating Android devices. Build skills, manage phone farms, zero cloud dependency." />
+	<meta property="og:image" content="/mascot/40-lineup-banner.png" />
+	<meta property="og:type" content="website" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Ghost in the Droid" />
+	<meta name="twitter:image" content="/mascot/40-lineup-banner.png" />
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-5H5CYJFJLJ"></script>
+	<script is:inline>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-5H5CYJFJLJ');</script>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+	<style>
+		/* ═══════════ RESET & BASE ═══════════ */
+		*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+		html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+		body {
+			font-family: 'Outfit', sans-serif;
+			background: #050505;
+			color: #b0b0b0;
+			line-height: 1.6;
+			overflow-x: hidden;
+		}
+		a { color: inherit; text-decoration: none; }
+
+		/* ═══════════ CSS VARS ═══════════ */
+		:root {
+			--accent: #00e5a0;
+			--accent-dim: #00e5a018;
+			--accent-mid: #00e5a040;
+			--accent-glow: 0 0 80px #00e5a025, 0 0 200px #00e5a010;
+			--surface: #0c0c0c;
+			--surface-raised: #111111;
+			--border: #1a1a1a;
+			--border-hover: #2a2a2a;
+			--text-primary: #e8e8e8;
+			--text-secondary: #777;
+			--max-w: 1140px;
+			--radius: 12px;
+		}
+
+		/* ═══════════ NOISE TEXTURE ═══════════ */
+		body::before {
+			content: '';
+			position: fixed;
+			inset: 0;
+			opacity: 0.03;
+			background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+			background-size: 256px 256px;
+			pointer-events: none;
+			z-index: 9999;
+		}
+
+		/* ═══════════ NAV ═══════════ */
+		nav {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 100;
+			padding: 0 2rem;
+			height: 64px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: #050505cc;
+			backdrop-filter: blur(20px) saturate(1.4);
+			border-bottom: 1px solid var(--border);
+			transition: border-color 0.3s;
+		}
+		.nav-logo {
+			font-weight: 700;
+			font-size: 1.2rem;
+			color: var(--text-primary);
+			letter-spacing: -0.5px;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.nav-logo .nav-mascot {
+			width: 32px;
+			height: 32px;
+			object-fit: contain;
+			filter: drop-shadow(0 0 6px var(--accent));
+			animation: float-mascot 3s ease-in-out infinite;
+		}
+		@keyframes float-mascot {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-2px); }
+		}
+		.nav-links {
+			display: flex;
+			gap: 2rem;
+			align-items: center;
+		}
+		.nav-links a {
+			font-size: 0.875rem;
+			font-weight: 400;
+			color: var(--text-secondary);
+			transition: color 0.2s;
+		}
+		.nav-links a:hover { color: var(--text-primary); }
+		.nav-cta {
+			font-size: 0.8rem !important;
+			font-weight: 500 !important;
+			color: #050505 !important;
+			background: var(--accent);
+			padding: 0.4rem 1rem;
+			border-radius: 6px;
+			transition: opacity 0.2s, transform 0.2s;
+		}
+		.nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+		/* ═══════════ LAYOUT ═══════════ */
+		.container { max-width: var(--max-w); margin: 0 auto; padding: 0 2rem; }
+		section { padding: 6rem 0; }
+
+		/* ═══════════ HERO ═══════════ */
+		.hero {
+			padding: 10rem 0 6rem;
+			text-align: center;
+			position: relative;
+		}
+		.hero::before {
+			content: '';
+			position: absolute;
+			top: -200px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 700px;
+			height: 700px;
+			background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%);
+			pointer-events: none;
+		}
+		.hero-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.35rem 1rem;
+			border: 1px solid var(--border);
+			border-radius: 100px;
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+			margin-bottom: 2rem;
+			background: var(--surface);
+			animation: fade-up 0.6s ease-out both;
+		}
+		.hero-badge .tag {
+			color: var(--accent);
+			font-weight: 500;
+		}
+		.hero h1 {
+			font-size: clamp(2.8rem, 6.5vw, 5rem);
+			font-weight: 800;
+			line-height: 1.05;
+			letter-spacing: -2.5px;
+			color: var(--text-primary);
+			margin-bottom: 1.5rem;
+			animation: fade-up 0.6s ease-out 0.1s both;
+		}
+		.hero h1 .gradient {
+			background: linear-gradient(135deg, var(--accent) 0%, #00b4d8 50%, #7b68ee 100%);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+		.hero-sub {
+			font-size: 1.15rem;
+			color: var(--text-secondary);
+			max-width: 580px;
+			margin: 0 auto 2.5rem;
+			line-height: 1.7;
+			font-weight: 300;
+			animation: fade-up 0.6s ease-out 0.2s both;
+		}
+		.hero-actions {
+			display: flex;
+			gap: 1rem;
+			justify-content: center;
+			flex-wrap: wrap;
+			animation: fade-up 0.6s ease-out 0.3s both;
+		}
+		.btn-primary {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.75rem 1.75rem;
+			background: var(--accent);
+			color: #050505;
+			font-weight: 600;
+			font-size: 0.95rem;
+			border-radius: 8px;
+			border: none;
+			cursor: pointer;
+			transition: transform 0.2s, box-shadow 0.2s;
+		}
+		.btn-primary:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 30px #00e5a030;
+		}
+		.btn-outline {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.75rem 1.75rem;
+			background: transparent;
+			color: var(--text-primary);
+			font-weight: 500;
+			font-size: 0.95rem;
+			border-radius: 8px;
+			border: 1px solid var(--border);
+			cursor: pointer;
+			transition: border-color 0.2s, background 0.2s;
+		}
+		.btn-outline:hover {
+			border-color: var(--border-hover);
+			background: var(--surface);
+		}
+
+		/* ═══════════ TERMINAL ═══════════ */
+		.terminal-section { padding: 2rem 0 6rem; }
+		.terminal {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			overflow: hidden;
+			max-width: 700px;
+			margin: 0 auto;
+			animation: fade-up 0.6s ease-out 0.4s both;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+		}
+		.terminal-header {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 0.75rem 1rem;
+			background: var(--surface-raised);
+			border-bottom: 1px solid var(--border);
+		}
+		.terminal-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+		}
+		.terminal-dot.r { background: #ff5f57; }
+		.terminal-dot.y { background: #febc2e; }
+		.terminal-dot.g { background: #28c840; }
+		.terminal-title {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.7rem;
+			color: var(--text-secondary);
+			margin-left: 0.5rem;
+		}
+		.terminal-body {
+			padding: 1.25rem 1.5rem;
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.82rem;
+			line-height: 1.8;
+			overflow-x: auto;
+		}
+		.t-kw { color: #c792ea; }
+		.t-fn { color: #82aaff; }
+		.t-str { color: #c3e88d; }
+		.t-cm { color: #546e7a; }
+		.t-num { color: #f78c6c; }
+		.t-op { color: #89ddff; }
+		.t-var { color: #e8e8e8; }
+
+		/* ═══════════ WORKS-WITH STRIP ═══════════ */
+		.hero-works {
+			margin-top: 2.25rem;
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+			animation: fade-up 0.6s ease-out 0.4s both;
+		}
+		.works-line {
+			font-size: 0.78rem;
+			font-weight: 300;
+			color: #56605b;
+			letter-spacing: 0.2px;
+		}
+		.works-label {
+			display: inline-block;
+			min-width: 6.4rem;
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.65rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 1.2px;
+			color: #47554d;
+		}
+		.works-line a {
+			color: #7f8d86;
+			transition: color 0.2s;
+			white-space: nowrap;
+		}
+		.works-line a:hover { color: var(--accent); }
+		.works-plain { color: #7f8d86; white-space: nowrap; }
+		.works-sep { color: #2e3531; margin: 0 0.3rem; }
+		@media (max-width: 768px) {
+			.works-label { display: block; min-width: 0; margin-bottom: 0.15rem; }
+			.works-line { margin-bottom: 0.35rem; }
+		}
+
+		/* ═══════════ HERO REEL ═══════════ */
+		.reel-section { padding: 4rem 0 2rem; }
+		.reel-section .section-label,
+		.reel-section .section-title { text-align: center; }
+		.reel-section .section-sub {
+			text-align: center;
+			margin-left: auto;
+			margin-right: auto;
+			margin-bottom: 2.5rem;
+		}
+		.reel-player {
+			position: relative;
+			border-radius: var(--radius);
+			overflow: hidden;
+			border: 1px solid var(--border);
+			background: #000;
+			aspect-ratio: 16 / 9;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--accent-glow);
+			transition: border-color 0.3s;
+		}
+		.reel-player:hover { border-color: var(--accent-mid); }
+		.reel-player video {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		/* ═══════════ DEMO VIDEO TOGGLE ═══════════ */
+		.demo-section { padding: 2rem 0 6rem; }
+		.demo-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			margin-bottom: 2rem;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+		.demo-header h2 {
+			font-size: clamp(1.6rem, 3vw, 2.2rem);
+			font-weight: 700;
+			color: var(--text-primary);
+			letter-spacing: -1px;
+		}
+		.demo-header p {
+			color: var(--text-secondary);
+			font-size: 0.95rem;
+			font-weight: 300;
+			margin-top: 0.35rem;
+		}
+		.demo-tabs {
+			display: flex;
+			gap: 0;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			overflow: hidden;
+			background: var(--surface);
+		}
+		.demo-tab, .install-tab {
+			padding: 0.55rem 1.25rem;
+			font-size: 0.82rem;
+			font-weight: 500;
+			color: var(--text-secondary);
+			cursor: pointer;
+			transition: all 0.25s;
+			border: none;
+			background: transparent;
+			font-family: 'Outfit', sans-serif;
+			border-right: 1px solid var(--border);
+			white-space: nowrap;
+		}
+		.demo-tab:last-child, .install-tab:last-child { border-right: none; }
+		.demo-tab:hover, .install-tab:hover { color: var(--text-primary); background: var(--surface-raised); }
+		.demo-tab.active, .install-tab.active {
+			color: #050505;
+			background: var(--accent);
+			font-weight: 600;
+		}
+		.demo-groups {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.25rem 2rem;
+			margin-bottom: 2rem;
+			justify-content: center;
+		}
+		.demo-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.45rem;
+		}
+		.demo-group-label {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.65rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+			color: var(--accent);
+		}
+
+		/* ═══════════ MCP INSTALLER TABS ═══════════ */
+		.install-terminal { position: relative; max-width: 760px; margin: 0 auto; text-align: left; }
+		.install-panel { display: none; }
+		.install-panel.active { display: block; }
+		.copy-btn {
+			margin-left: auto;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			background: transparent;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			color: var(--text-secondary);
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.65rem;
+			padding: 0.28rem 0.55rem;
+			cursor: pointer;
+			transition: color 0.2s, border-color 0.2s;
+		}
+		.copy-btn:hover, .copy-btn.copied { color: var(--accent); border-color: var(--accent-mid); }
+		.install-note { text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #555; }
+		.install-note a { color: #7f8d86; transition: color 0.2s; }
+		.install-note a:hover { color: var(--accent); }
+		.demo-player {
+			position: relative;
+			border-radius: var(--radius);
+			overflow: hidden;
+			border: 1px solid var(--border);
+			background: #000;
+			aspect-ratio: 16 / 9;
+			max-width: 900px;
+			margin: 0 auto;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+		}
+		.demo-player video {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 0;
+			transition: opacity 0.4s ease;
+		}
+		.demo-player video.active { opacity: 1; }
+		.demo-subtitle {
+			text-align: center;
+			margin-top: 1rem;
+			font-size: 0.85rem;
+			color: var(--text-secondary);
+			font-weight: 300;
+		}
+		@media (max-width: 768px) {
+			.demo-header { flex-direction: column; align-items: flex-start; }
+		}
+
+		/* ═══════════ FEATURES — Alternating rows with ghost images ═══════════ */
+		.features-section { padding-top: 4rem; }
+		.section-label {
+			font-size: 0.75rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 2px;
+			color: var(--accent);
+			margin-bottom: 1rem;
+		}
+		.section-title {
+			font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+			font-weight: 700;
+			color: var(--text-primary);
+			letter-spacing: -1px;
+			margin-bottom: 1rem;
+		}
+		.section-sub {
+			color: var(--text-secondary);
+			font-size: 1.05rem;
+			max-width: 550px;
+			font-weight: 300;
+			margin-bottom: 3.5rem;
+		}
+		.feature-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 4rem;
+			align-items: center;
+			padding: 4rem 0;
+			border-bottom: 1px solid var(--border);
+		}
+		.feature-row:last-child { border-bottom: none; }
+		.feature-row.reverse .feature-img { order: 2; }
+		.feature-row.reverse .feature-text { order: 1; }
+		.feature-img {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.feature-img img {
+			max-width: 280px;
+			max-height: 280px;
+			width: 100%;
+			height: auto;
+			object-fit: contain;
+			filter: drop-shadow(0 0 40px rgba(0, 229, 160, 0.1));
+			transition: transform 0.3s ease;
+		}
+		.feature-row:hover .feature-img img {
+			transform: scale(1.04);
+		}
+		.feature-text h3 {
+			font-size: 1.4rem;
+			font-weight: 700;
+			color: var(--text-primary);
+			margin-bottom: 0.75rem;
+			letter-spacing: -0.5px;
+		}
+		.feature-text p {
+			font-size: 0.95rem;
+			color: var(--text-secondary);
+			line-height: 1.7;
+			max-width: 480px;
+		}
+		.feature-tag {
+			display: inline-block;
+			font-size: 0.7rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+			color: var(--accent);
+			background: var(--accent-dim);
+			padding: 0.25rem 0.7rem;
+			border-radius: 4px;
+			margin-bottom: 0.75rem;
+		}
+
+		/* ═══════════ HERO WITH GHOST ═══════════ */
+		.hero-split {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 3rem;
+		}
+		.hero-content { text-align: left; flex: 1; max-width: 560px; }
+		.hero-ghost {
+			flex-shrink: 0;
+			width: 280px;
+		}
+		.hero-ghost img {
+			width: 100%;
+			height: auto;
+			filter: drop-shadow(0 0 60px rgba(0, 229, 160, 0.15));
+		}
+		@media (max-width: 768px) {
+			.hero-split { flex-direction: column; text-align: center; }
+			.hero-content { text-align: center; }
+			.hero-ghost { width: 200px; order: -1; }
+		}
+
+		/* ═══════════ HOW IT WORKS ═══════════ */
+		.steps-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2rem;
+			margin-top: 3rem;
+		}
+		.step {
+			position: relative;
+			padding: 2rem;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+			transition: border-color 0.3s;
+		}
+		.step:hover { border-color: var(--accent-mid); }
+		.step-num {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.7rem;
+			font-weight: 500;
+			color: var(--accent);
+			background: var(--accent-dim);
+			padding: 0.25rem 0.6rem;
+			border-radius: 4px;
+			display: inline-block;
+			margin-bottom: 1rem;
+		}
+		.step h3 {
+			font-size: 1.1rem;
+			font-weight: 600;
+			color: var(--text-primary);
+			margin-bottom: 0.5rem;
+		}
+		.step p {
+			font-size: 0.875rem;
+			color: var(--text-secondary);
+			line-height: 1.6;
+		}
+		.step-connector {
+			display: none;
+		}
+
+		/* ═══════════ STATS ═══════════ */
+		.stats-section {
+			padding: 4rem 0;
+			border-top: 1px solid var(--border);
+			border-bottom: 1px solid var(--border);
+		}
+		.stats-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 2rem;
+			text-align: center;
+		}
+		.stat-value {
+			font-size: clamp(1.8rem, 3vw, 2.5rem);
+			font-weight: 700;
+			color: var(--text-primary);
+			letter-spacing: -1px;
+		}
+		.stat-label {
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+			margin-top: 0.25rem;
+		}
+
+		/* ═══════════ CTA ═══════════ */
+		.cta-section {
+			text-align: center;
+			padding: 8rem 0;
+			position: relative;
+		}
+		.cta-section::before {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 500px;
+			height: 500px;
+			background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%);
+			pointer-events: none;
+		}
+		.cta-section h2 {
+			font-size: clamp(2rem, 4vw, 3rem);
+			font-weight: 700;
+			color: var(--text-primary);
+			letter-spacing: -1.5px;
+			margin-bottom: 1rem;
+		}
+		.cta-section p {
+			color: var(--text-secondary);
+			font-size: 1.05rem;
+			margin-bottom: 2.5rem;
+			font-weight: 300;
+		}
+
+		/* ═══════════ FOOTER ═══════════ */
+		footer {
+			border-top: 1px solid var(--border);
+			padding: 3rem 0;
+		}
+		.footer-inner {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+		.footer-left {
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+		}
+		.footer-links {
+			display: flex;
+			gap: 1.5rem;
+		}
+		.footer-links a {
+			font-size: 0.8rem;
+			color: var(--text-secondary);
+			transition: color 0.2s;
+		}
+		.footer-links a:hover { color: var(--text-primary); }
+
+		/* ═══════════ ANIMATIONS ═══════════ */
+		@keyframes fade-up {
+			from { opacity: 0; transform: translateY(20px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		/* ═══════════ RESPONSIVE ═══════════ */
+		@media (max-width: 768px) {
+			.feature-row { grid-template-columns: 1fr; gap: 2rem; text-align: center; }
+			.feature-row.reverse .feature-img { order: -1; }
+			.feature-row.reverse .feature-text { order: 2; }
+			.feature-img img { max-width: 200px; }
+			.steps-grid { grid-template-columns: 1fr; }
+			.stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+			.hero { padding: 8rem 0 4rem; }
+			.nav-links a:not(.nav-cta) { display: none; }
+			section { padding: 4rem 0; }
+		}
+		@media (max-width: 480px) {
+			.stats-grid { grid-template-columns: 1fr; }
+			.hero h1 { letter-spacing: -1.5px; }
+		}
+	</style>
+	<!-- Vercel Web Analytics (Starlight head-injection doesn't reach this standalone page) -->
+	<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+	<!-- NAV -->
+	<nav>
+		<a href="/" class="nav-logo">
+			<img src="/mascot/43-wave.png" alt="Ghost mascot" class="nav-mascot" />
+			Ghost in the Droid
+		</a>
+		<div class="nav-links">
+			<a href="/getting-started/introduction/">Docs</a>
+			<a href="/skills/">Skill Hub</a>
+			<a href="https://github.com/ghost-in-the-droid/android-agent">GitHub</a>
+			<a href="/getting-started/installation/" class="nav-cta">Get Started</a>
+		</div>
+	</nav>
+
+	<!-- ASCII SPHERE -->
+	<canvas id="ascii-sphere" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.35"></canvas>
+
+	<!-- HERO -->
+	<section class="hero" style="position:relative;z-index:1">
+		<div class="container">
+			<div class="hero-badge">
+				<span class="tag">Open Source</span>
+				<span>MIT Licensed — free forever</span>
+			</div>
+			<div class="hero-split">
+				<div class="hero-content">
+					<h1>
+						Summon a Ghost<br/>Into Your <span class="gradient">Android</span>
+					</h1>
+					<p class="hero-sub">
+						It sees the screen. It taps the buttons. It never sleeps.
+						Open-source Python framework for controlling real phones via ADB.
+						No root required. No cloud dependency. Pure automation.
+					</p>
+					<div class="hero-actions">
+						<a href="/getting-started/installation/" class="btn-primary">
+							Get Started
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+						</a>
+						<a href="https://github.com/ghost-in-the-droid/android-agent" class="btn-outline">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+							View on GitHub
+						</a>
+					</div>
+					<div class="hero-works">
+						<div class="works-line">
+							<span class="works-label">Works with</span>
+							<a href="https://langchain.com">LangChain</a> <span class="works-sep">·</span><a href="https://llamaindex.ai">LlamaIndex</a> <span class="works-sep">·</span><a href="https://modelcontextprotocol.io">MCP</a>
+						</div>
+						<div class="works-line">
+							<span class="works-label">Drive with</span>
+							<a href="https://claude.com/product/claude-code">Claude Code</a> <span class="works-sep">·</span><a href="https://github.com/openai/codex">Codex</a> <span class="works-sep">·</span><a href="https://antigravity.google">Antigravity</a> <span class="works-sep">·</span><a href="https://cursor.com">Cursor</a> <span class="works-sep">·</span><a href="https://opencode.ai">Opencode</a> <span class="works-sep">·</span><a href="https://claude.com/download">Claude Desktop</a>
+						</div>
+						<div class="works-line">
+							<span class="works-label">Powered by</span>
+							<a href="https://anthropic.com">Anthropic API</a> <span class="works-sep">·</span><a href="https://openai.com">OpenAI</a> <span class="works-sep">·</span><a href="https://openrouter.ai">OpenRouter</a> <span class="works-sep">·</span><a href="https://ollama.com">Ollama</a> <span class="works-sep">·</span><a href="https://vllm.ai">vLLM</a>
+						</div>
+						<div class="works-line">
+							<span class="works-label">Runs on</span>
+							<a href="/features/on-device-llm/">iOS</a> <span class="works-sep">·</span><a href="/getting-started/connect-phone/">Android</a> <span class="works-sep">·</span><a href="/features/emulator/">Android&nbsp;Emulator</a> <span class="works-sep">·</span><span class="works-plain">Your&nbsp;PC</span>
+						</div>
+						<div class="works-line">
+							<span class="works-label">On-device</span>
+							<a href="https://github.com/ggml-org/llama.cpp">llama.cpp</a> <span class="works-sep">·</span><a href="https://ai.google.dev/edge/mediapipe">MediaPipe</a> <span class="works-sep">·</span><a href="https://github.com/ml-explore/mlx">MLX</a>
+						</div>
+					</div>
+				</div>
+				<div class="hero-ghost" style="animation: fade-up 0.6s ease-out 0.3s both">
+					<img src="/mascot/12-the-tap.png" alt="Ghost tapping a phone" />
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- TERMINAL -->
+	<section class="terminal-section">
+		<div class="container">
+			<div class="terminal">
+				<div class="terminal-header">
+					<span class="terminal-dot r"></span>
+					<span class="terminal-dot y"></span>
+					<span class="terminal-dot g"></span>
+					<span class="terminal-title">main.py</span>
+				</div>
+				<div class="terminal-body">
+					<span class="t-kw">from</span> <span class="t-var">android_agent</span> <span class="t-kw">import</span> <span class="t-fn">Device</span><br/>
+					<br/>
+					<span class="t-var">ghost</span> <span class="t-op">=</span> <span class="t-fn">Device</span><span class="t-op">()</span>            <span class="t-cm"># summon the ghost</span><br/>
+					<span class="t-var">ghost</span><span class="t-op">.</span><span class="t-fn">tap</span><span class="t-op">(</span><span class="t-num">540</span><span class="t-op">,</span> <span class="t-num">1200</span><span class="t-op">)</span>        <span class="t-cm"># tap the screen</span><br/>
+					<br/>
+					<span class="t-var">xml</span> <span class="t-op">=</span> <span class="t-var">ghost</span><span class="t-op">.</span><span class="t-fn">dump_xml</span><span class="t-op">()</span>     <span class="t-cm"># read what's on screen</span><br/>
+					<span class="t-var">ghost</span><span class="t-op">.</span><span class="t-fn">tap_text</span><span class="t-op">(</span><span class="t-var">xml</span><span class="t-op">,</span> <span class="t-str">"Search"</span><span class="t-op">)</span> <span class="t-cm"># the ghost finds &amp; taps</span><br/>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- MCP INSTALL — tabbed per-client installer -->
+	<section class="install-section" style="position:relative;z-index:1;padding:3rem 0 1rem">
+		<div class="container">
+			<div style="max-width:840px;margin:0 auto;text-align:center">
+				<h2 style="font-size:1.4rem;font-weight:700;color:var(--text-primary);margin-bottom:0.5rem">Wire up your agent — one command per client</h2>
+				<p style="color:var(--text-secondary);font-size:0.95rem;margin-bottom:1.5rem">62 MCP tools — tap, swipe, type, screenshot, OCR, launch apps, run skills. Pick your client:</p>
+				<div class="demo-groups">
+					<div class="demo-group">
+						<span class="demo-group-label">CLI — one command</span>
+						<div class="demo-tabs">
+							<button class="install-tab active" data-client="claude-code">Claude Code</button>
+							<button class="install-tab" data-client="codex">Codex</button>
+							<button class="install-tab" data-client="antigravity">Antigravity</button>
+							<button class="install-tab" data-client="opencode">Opencode</button>
+						</div>
+					</div>
+					<div class="demo-group">
+						<span class="demo-group-label">JSON config</span>
+						<div class="demo-tabs">
+							<button class="install-tab" data-client="claude-desktop">Claude Desktop</button>
+							<button class="install-tab" data-client="cursor">Cursor</button>
+							<button class="install-tab" data-client="windsurf">Windsurf</button>
+							<button class="install-tab" data-client="vscode">VS Code Copilot</button>
+						</div>
+					</div>
+				</div>
+				<div class="terminal install-terminal">
+					<div class="terminal-header">
+						<span class="terminal-dot r"></span>
+						<span class="terminal-dot y"></span>
+						<span class="terminal-dot g"></span>
+						<span class="terminal-title" id="install-title">install</span>
+						<button class="copy-btn" id="install-copy" aria-label="Copy to clipboard">
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+							<span>copy</span>
+						</button>
+					</div>
+					<div class="terminal-body install-panel active" data-key="claude-code" style="font-size:0.85rem;line-height:1.8">
+						<span class="t-fn">claude</span> mcp add android-agent <span class="t-op">--</span> uvx <span class="t-op">--from</span> ghost-in-the-droid android-agent-mcp
+					</div>
+					<div class="terminal-body install-panel" data-key="codex" style="font-size:0.85rem;line-height:1.8">
+						<span class="t-fn">codex</span> mcp add android-agent <span class="t-op">--</span> uvx <span class="t-op">--from</span> ghost-in-the-droid android-agent-mcp
+					</div>
+					<div class="terminal-body install-panel" data-key="antigravity" style="font-size:0.85rem;line-height:1.8">
+						<span class="t-fn">agy</span> mcp add android-agent <span class="t-op">--</span> uvx <span class="t-op">--from</span> ghost-in-the-droid android-agent-mcp
+					</div>
+					<div class="terminal-body install-panel" data-key="opencode" style="font-size:0.85rem;line-height:1.8">
+						<span class="t-fn">opencode</span> mcp add android-agent <span class="t-op">--</span> uvx <span class="t-op">--from</span> ghost-in-the-droid android-agent-mcp
+					</div>
+					<div class="terminal-body install-panel" data-key="claude-desktop" style="font-size:0.8rem;line-height:1.7">
+						<span class="t-cm"># macOS: ~/Library/Application Support/Claude/claude_desktop_config.json</span><br/>
+						<span class="t-cm"># Windows: %APPDATA%\Claude\claude_desktop_config.json</span><br/>
+						<span class="t-op">{</span><br/>
+						&nbsp;&nbsp;<span class="t-str">"mcpServers"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"android-agent"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"command"</span><span class="t-op">:</span> <span class="t-str">"uvx"</span><span class="t-op">,</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"args"</span><span class="t-op">:</span> <span class="t-op">[</span><span class="t-str">"--from"</span><span class="t-op">,</span> <span class="t-str">"ghost-in-the-droid"</span><span class="t-op">,</span> <span class="t-str">"android-agent-mcp"</span><span class="t-op">]</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						<span class="t-op">}</span>
+					</div>
+					<div class="terminal-body install-panel" data-key="cursor" style="font-size:0.8rem;line-height:1.7">
+						<span class="t-cm"># Save as .cursor/mcp.json in your project (or ~/.cursor/mcp.json globally)</span><br/>
+						<span class="t-op">{</span><br/>
+						&nbsp;&nbsp;<span class="t-str">"mcpServers"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"android-agent"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"command"</span><span class="t-op">:</span> <span class="t-str">"uvx"</span><span class="t-op">,</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"args"</span><span class="t-op">:</span> <span class="t-op">[</span><span class="t-str">"--from"</span><span class="t-op">,</span> <span class="t-str">"ghost-in-the-droid"</span><span class="t-op">,</span> <span class="t-str">"android-agent-mcp"</span><span class="t-op">]</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						<span class="t-op">}</span>
+					</div>
+					<div class="terminal-body install-panel" data-key="windsurf" style="font-size:0.8rem;line-height:1.7">
+						<span class="t-cm"># Save as mcp_config.json in your Windsurf config directory</span><br/>
+						<span class="t-op">{</span><br/>
+						&nbsp;&nbsp;<span class="t-str">"mcpServers"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"android-agent"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"command"</span><span class="t-op">:</span> <span class="t-str">"uvx"</span><span class="t-op">,</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"args"</span><span class="t-op">:</span> <span class="t-op">[</span><span class="t-str">"--from"</span><span class="t-op">,</span> <span class="t-str">"ghost-in-the-droid"</span><span class="t-op">,</span> <span class="t-str">"android-agent-mcp"</span><span class="t-op">]</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						<span class="t-op">}</span>
+					</div>
+					<div class="terminal-body install-panel" data-key="vscode" style="font-size:0.8rem;line-height:1.7">
+						<span class="t-cm"># Save as .vscode/mcp.json — note the "servers" key</span><br/>
+						<span class="t-op">{</span><br/>
+						&nbsp;&nbsp;<span class="t-str">"servers"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"android-agent"</span><span class="t-op">:</span> <span class="t-op">{</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"command"</span><span class="t-op">:</span> <span class="t-str">"uvx"</span><span class="t-op">,</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-str">"args"</span><span class="t-op">:</span> <span class="t-op">[</span><span class="t-str">"--from"</span><span class="t-op">,</span> <span class="t-str">"ghost-in-the-droid"</span><span class="t-op">,</span> <span class="t-str">"android-agent-mcp"</span><span class="t-op">]</span><br/>
+						&nbsp;&nbsp;&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						&nbsp;&nbsp;<span class="t-op">}</span><br/>
+						<span class="t-op">}</span>
+					</div>
+				</div>
+				<p class="install-note">First time? uvx installs on demand — no clone needed. Plug in a phone with USB debugging and your agent can control it immediately. <a href="/features/mcp-clients/">Other clients →</a></p>
+			</div>
+		</div>
+	</section>
+
+	<!-- HERO REEL — master sizzle with VO -->
+	<section class="reel-section" style="position:relative;z-index:1">
+		<div class="container">
+			<div class="section-label">The Reel</div>
+			<h2 class="section-title">Give any AI agent a real phone</h2>
+			<p class="section-sub">The 32-second master reel. Real devices, real agents, one voiceover. Hover for sound.</p>
+			<div class="reel-player">
+				<video
+					id="hero-reel"
+					src="/showcase/hero-reel.webm"
+					poster="/showcase/hero-poster.png"
+					autoplay muted loop playsinline preload="metadata"
+				></video>
+			</div>
+		</div>
+	</section>
+
+	<!-- DEMO VIDEOS -->
+	<section class="demo-section" style="position:relative;z-index:1">
+		<div class="container">
+			<div class="demo-header" style="justify-content:center;text-align:center">
+				<div>
+					<h2>See the ghost in action</h2>
+					<p>Nine demos. Real phones, real agents. No scripted mockups.</p>
+				</div>
+			</div>
+			<div class="demo-groups">
+				<div class="demo-group">
+					<span class="demo-group-label">MCP Clients</span>
+					<div class="demo-tabs">
+						<button class="demo-tab active" data-video="mcp-claude-code-tui">Claude Code</button>
+						<button class="demo-tab" data-video="mcp-codex-tui">Codex</button>
+						<button class="demo-tab" data-video="mcp-agy-tui">Antigravity</button>
+					</div>
+				</div>
+				<div class="demo-group">
+					<span class="demo-group-label">Interfaces</span>
+					<div class="demo-tabs">
+						<button class="demo-tab" data-video="ghost-cli">Ghost CLI</button>
+						<button class="demo-tab" data-video="langchain">LangChain</button>
+						<button class="demo-tab" data-video="web-chat-gui">Web Chat</button>
+					</div>
+				</div>
+				<div class="demo-group">
+					<span class="demo-group-label">On-Device + iOS</span>
+					<div class="demo-tabs">
+						<button class="demo-tab" data-video="on-device-android">Android</button>
+						<button class="demo-tab" data-video="on-device-ios">iPhone</button>
+						<button class="demo-tab" data-video="iphone-duolingo">Duolingo</button>
+					</div>
+				</div>
+			</div>
+			<div class="demo-player">
+				<video data-key="mcp-claude-code-tui" src="/showcase/mcp-claude-code-tui/demo.webm" class="active" autoplay muted loop playsinline preload="auto"></video>
+				<video data-key="mcp-codex-tui" src="/showcase/mcp-codex-tui/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="mcp-agy-tui" src="/showcase/mcp-agy-tui/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="ghost-cli" src="/showcase/ghost-cli/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="langchain" src="/showcase/langchain/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="web-chat-gui" src="/showcase/web-chat-gui/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="on-device-android" src="/showcase/on-device-android/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="on-device-ios" src="/showcase/on-device-ios/demo.webm" muted loop playsinline preload="none"></video>
+				<video data-key="iphone-duolingo" src="/showcase/iphone-duolingo/demo.webm" muted loop playsinline preload="none"></video>
+			</div>
+			<div class="demo-subtitle" id="demo-sub">Claude Code drives the phone. Type in the TUI, watch it act.</div>
+		</div>
+	</section>
+
+	<!-- FEATURES — alternating left/right with ghost mascot -->
+	<section class="features-section">
+		<div class="container">
+			<div class="section-label">Capabilities</div>
+			<h2 class="section-title">The ghost sees. The ghost taps. The ghost never stops.</h2>
+			<p class="section-sub">From a single tap to a full phone farm. Android or iPhone. Cloud brain or the phone itself.</p>
+
+			<div class="feature-row">
+				<div class="feature-img">
+					<img src="/mascot/12-the-tap.png" alt="Ghost tapping a phone screen" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Device Control</span>
+					<h3>The ghost taps what you'd tap</h3>
+					<p>62 MCP tools — tap, swipe, type, clipboard, screenshots, browser primitives, TTS, camera. Works on any Android 5.0+ phone via USB or Wi-Fi ADB. Works on iPhone via WebDriverAgent. The ghost doesn't install anything on your device. It possesses through the debug bridge (Android) or the WDA tunnel (iOS).</p>
+				</div>
+			</div>
+
+			<div class="feature-row reverse">
+				<div class="feature-img">
+					<img src="/mascot/16-the-watch.png" alt="Ghost watching a phone screen" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Screen Reading</span>
+					<h3>The ghost sees what you see</h3>
+					<p>Read the screen via UIAutomator XML on Android, XCTest accessibility tree on iPhone, OCR, or a live MJPEG / WebRTC stream in your browser. Find any element by text, id, or position. The ghost reads every pixel — whichever platform.</p>
+				</div>
+			</div>
+
+			<div class="feature-row">
+				<div class="feature-img">
+					<img src="/mascot/22-forge.png" alt="Ghost forging a skill" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Skill System</span>
+					<h3>Forge reusable skills for any app</h3>
+					<p>YAML-defined UI elements per platform (elements.yaml for Android, elements_ios.yaml for iOS). Python actions with precondition checks. Multi-step workflows that chain. Ships with TikTok, Play Store, Chrome News. Crack any app. Forge a skill. Share it on the Skill Hub.</p>
+				</div>
+			</div>
+
+			<div class="feature-row reverse">
+				<div class="feature-img">
+					<img src="/mascot/18-the-farm.png" alt="Multiple ghosts on a phone farm" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Phone Farm</span>
+					<h3>One ghost is useful. A hundred are unstoppable.</h3>
+					<p>Multi-device management with per-phone job queues, priority scheduling, WebRTC streaming, and a full dashboard. USB, wireless, Docker+KVM Android emulator pools, Tailscale-driven iPhone fleets. One box. Ten phones. Zero cloud.</p>
+				</div>
+			</div>
+
+			<div class="feature-row">
+				<div class="feature-img">
+					<img src="/mascot/34-stealth.png" alt="Ghost in stealth mode" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Stealth</span>
+					<h3>No root. No cloud. No trace. Airplane mode works.</h3>
+					<p>Gaussian tap jitter, variable-speed swipes, character-by-character typing. No root, no accessibility service, nothing installed by default. Optional companion app on Android for WebRTC + 30x quicker reads. On-device mode runs the model INSIDE the phone — the model file, the tool loop, the agent — nothing leaves. Airplane mode is a supported deployment.</p>
+				</div>
+			</div>
+
+			<div class="feature-row reverse">
+				<div class="feature-img">
+					<img src="/mascot/15-the-possess.png" alt="Ghost possessing a phone" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">AI Agent Body</span>
+					<h3>Your agent can think. Now it can touch.</h3>
+					<p>MCP server exposes 62 tools. LangChain + LlamaIndex adapters wrap the same surface behind a fail-closed allow-list. Point Claude Code, Codex, Antigravity, Cursor, Opencode, or a model running inside the phone itself at it — your agent grows hands. The ghost is the bridge between thought and tap.</p>
+				</div>
+			</div>
+
+			<div class="feature-row">
+				<div class="feature-img">
+					<img src="/mascot/26-the-share.png" alt="Ghost sharing a skill package" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Skill Hub</span>
+					<h3>Build once. Share with everyone.</h3>
+					<p>Community skill registry — install with one command. Every skill you build makes the haunting stronger. npm for Android automation.</p>
+				</div>
+			</div>
+
+			<div class="feature-row reverse">
+				<div class="feature-img">
+					<img src="/mascot/35-gigachad.png" alt="Ghost flexing — free and open source" loading="lazy" />
+				</div>
+				<div class="feature-text">
+					<span class="feature-tag">Free Forever</span>
+					<h3>Open source. Free forever.</h3>
+					<p>MIT licensed. No cloud. No subscription. No per-action fees. $55 of hardware, zero monthly cost. The ghost is free. The ghost is open source. The ghost is yours.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- HOW IT WORKS -->
+	<section>
+		<div class="container">
+			<div class="section-label">How it works</div>
+			<h2 class="section-title">Three steps to summon the ghost</h2>
+			<div class="steps-grid">
+				<div class="step">
+					<span class="step-num">01</span>
+					<h3>Plug in a phone</h3>
+					<p>USB cable + developer mode. One command: <code style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:0.8rem;">adb devices</code>. The ghost is ready.</p>
+				</div>
+				<div class="step">
+					<span class="step-num">02</span>
+					<h3>Teach the ghost</h3>
+					<p>Write Python, record macros, or install a community skill. The ghost learns the app. The ghost remembers.</p>
+				</div>
+				<div class="step">
+					<span class="step-num">03</span>
+					<h3>Scale the haunting</h3>
+					<p>Add more phones. Schedule jobs. The ghost multiplies across every device you own.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- STATS -->
+	<section class="stats-section">
+		<div class="container">
+			<div class="stats-grid">
+				<div>
+					<div class="stat-value">62</div>
+					<div class="stat-label">MCP tools</div>
+				</div>
+				<div>
+					<div class="stat-value">6</div>
+					<div class="stat-label">LLM backends</div>
+				</div>
+				<div>
+					<div class="stat-value">2</div>
+					<div class="stat-label">Platforms — Android + iOS</div>
+				</div>
+				<div>
+					<div class="stat-value">3</div>
+					<div class="stat-label">On-device engines</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- CTA -->
+	<section class="cta-section">
+		<div class="container">
+			<h2>Ready to summon the ghost?</h2>
+			<p>From zero to your first haunted phone in five minutes. Free. Open source. Yours.</p>
+			<a href="/getting-started/installation/" class="btn-primary">
+				Get Started
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+			</a>
+		</div>
+	</section>
+
+	<!-- FOOTER -->
+	<footer>
+		<div class="container">
+			<div class="footer-inner">
+				<div class="footer-left" style="display:flex;align-items:center;gap:0.6rem">
+					<img src="/mascot/43-wave.png" alt="" style="width:36px;height:36px;object-fit:contain" />
+					<span>Built by ghosts, for ghosts. Open source forever.</span>
+				</div>
+				<div class="footer-links">
+					<a href="/getting-started/introduction/">Docs</a>
+					<a href="/skills/">Skill Hub</a>
+					<a href="/api/device-methods/">API</a>
+					<a href="/contributing/setup/">Contribute</a>
+					<a href="https://github.com/ghost-in-the-droid/android-agent">GitHub</a>
+					<a href="https://x.com/ghostinthedroid">X</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+	<script>
+	(function() {
+		const canvas = document.getElementById('ascii-sphere');
+		if (!canvas) return;
+		const ctx = canvas.getContext('2d');
+		const chars = '.:-=+*#%@'.split('');
+		let mx = 0.5, my = 0.5, time = 0;
+		let W, H, cols, rows, cellW, cellH;
+
+		function resize() {
+			const dpr = window.devicePixelRatio || 1;
+			W = window.innerWidth;
+			H = window.innerHeight;
+			canvas.width = W * dpr;
+			canvas.height = H * dpr;
+			ctx.scale(dpr, dpr);
+			cellW = 10;
+			cellH = 16;
+			cols = Math.floor(W / cellW);
+			rows = Math.floor(H / cellH);
+		}
+		resize();
+		window.addEventListener('resize', resize);
+
+		document.addEventListener('mousemove', function(e) {
+			mx = e.clientX / W;
+			my = e.clientY / H;
+		});
+
+		// Make canvas interactive for mouse tracking
+		canvas.style.pointerEvents = 'auto';
+		canvas.addEventListener('mousemove', function(e) {
+			mx = e.clientX / W;
+			my = e.clientY / H;
+		});
+
+		function render() {
+			time += 0.008;
+			ctx.clearRect(0, 0, W, H);
+			ctx.font = '12px "JetBrains Mono", monospace';
+			ctx.textBaseline = 'top';
+
+			// Sphere params
+			var cx = W * 0.5;
+			var cy = H * 0.38;
+			var radius = Math.min(W, H) * 0.28;
+			var rotX = (my - 0.5) * 2.5 + time * 0.3;
+			var rotY = (mx - 0.5) * 2.5 + time * 0.5;
+
+			// Mouse distortion point
+			var dmx = mx * W;
+			var dmy = my * H;
+
+			var points = 1200;
+			for (var i = 0; i < points; i++) {
+				// Fibonacci sphere distribution
+				var phi = Math.acos(1 - 2 * (i + 0.5) / points);
+				var theta = Math.PI * (1 + Math.sqrt(5)) * i;
+
+				var x = Math.sin(phi) * Math.cos(theta);
+				var y = Math.sin(phi) * Math.sin(theta);
+				var z = Math.cos(phi);
+
+				// Rotate Y
+				var x2 = x * Math.cos(rotY) - z * Math.sin(rotY);
+				var z2 = x * Math.sin(rotY) + z * Math.cos(rotY);
+
+				// Rotate X
+				var y2 = y * Math.cos(rotX) - z2 * Math.sin(rotX);
+				var z3 = y * Math.sin(rotX) + z2 * Math.cos(rotX);
+
+				// Project
+				var scale = 1 / (1 + z3 * 0.4);
+				var px = cx + x2 * radius * scale;
+				var py = cy + y2 * radius * scale;
+
+				// Mouse distortion
+				var ddx = px - dmx;
+				var ddy = py - dmy;
+				var dist = Math.sqrt(ddx * ddx + ddy * ddy);
+				var distortion = Math.max(0, 1 - dist / 200);
+				if (distortion > 0) {
+					var push = distortion * distortion * 60;
+					px += (ddx / (dist || 1)) * push;
+					py += (ddy / (dist || 1)) * push;
+				}
+
+				// Depth-based brightness
+				var brightness = (z3 + 1) * 0.5;
+				var charIdx = Math.floor(brightness * (chars.length - 1));
+				var alpha = 0.15 + brightness * 0.85;
+
+				// Green tint matching accent
+				var g = Math.floor(160 + brightness * 69);
+				ctx.fillStyle = 'rgba(0,' + g + ',' + Math.floor(100 + brightness * 60) + ',' + alpha * (0.5 + distortion * 0.5) + ')';
+				ctx.fillText(chars[charIdx], px, py);
+			}
+
+			requestAnimationFrame(render);
+		}
+		render();
+	})();
+	</script>
+	<script>
+	(function() {
+		// Hero reel: show controls on hover so visitors can unmute the VO
+		const reel = document.getElementById('hero-reel');
+		if (reel) {
+			const wrap = reel.parentElement;
+			wrap.addEventListener('mouseenter', function() { reel.setAttribute('controls', ''); });
+			wrap.addEventListener('mouseleave', function() {
+				if (!reel.muted) return; // keep controls once unmuted
+				reel.removeAttribute('controls');
+			});
+			// Touch devices get no hover — always show controls there
+			if (window.matchMedia('(hover: none)').matches) reel.setAttribute('controls', '');
+		}
+	})();
+	</script>
+	<script>
+	(function() {
+		const tabs = document.querySelectorAll('.install-tab');
+		const panels = document.querySelectorAll('.install-panel');
+		const title = document.getElementById('install-title');
+		const copyBtn = document.getElementById('install-copy');
+		if (!copyBtn) return;
+		const titles = {
+			'claude-code': 'claude-code',
+			'codex': 'codex',
+			'antigravity': 'antigravity',
+			'opencode': 'opencode',
+			'claude-desktop': 'claude_desktop_config.json',
+			'cursor': '.cursor/mcp.json',
+			'windsurf': 'mcp_config.json',
+			'vscode': '.vscode/mcp.json',
+		};
+		const JSON_STD = '{\n  "mcpServers": {\n    "android-agent": {\n      "command": "uvx",\n      "args": ["--from", "ghost-in-the-droid", "android-agent-mcp"]\n    }\n  }\n}';
+		const JSON_VSC = '{\n  "servers": {\n    "android-agent": {\n      "command": "uvx",\n      "args": ["--from", "ghost-in-the-droid", "android-agent-mcp"]\n    }\n  }\n}';
+		const payloads = {
+			'claude-code': 'claude mcp add android-agent -- uvx --from ghost-in-the-droid android-agent-mcp',
+			'codex': 'codex mcp add android-agent -- uvx --from ghost-in-the-droid android-agent-mcp',
+			'antigravity': 'agy mcp add android-agent -- uvx --from ghost-in-the-droid android-agent-mcp',
+			'opencode': 'opencode mcp add android-agent -- uvx --from ghost-in-the-droid android-agent-mcp',
+			'claude-desktop': JSON_STD,
+			'cursor': JSON_STD,
+			'windsurf': JSON_STD,
+			'vscode': JSON_VSC,
+		};
+		let current = 'claude-code';
+		title.textContent = titles[current];
+		tabs.forEach(function(tab) {
+			tab.addEventListener('click', function() {
+				current = tab.dataset.client;
+				tabs.forEach(function(t) { t.classList.remove('active'); });
+				tab.classList.add('active');
+				panels.forEach(function(p) { p.classList.toggle('active', p.dataset.key === current); });
+				title.textContent = titles[current] || current;
+			});
+		});
+		copyBtn.addEventListener('click', async function() {
+			const text = payloads[current];
+			try {
+				await navigator.clipboard.writeText(text);
+			} catch (e) {
+				const ta = document.createElement('textarea');
+				ta.value = text;
+				document.body.appendChild(ta);
+				ta.select();
+				document.execCommand('copy');
+				ta.remove();
+			}
+			copyBtn.classList.add('copied');
+			const label = copyBtn.querySelector('span');
+			label.textContent = 'copied!';
+			setTimeout(function() {
+				copyBtn.classList.remove('copied');
+				label.textContent = 'copy';
+			}, 1400);
+		});
+	})();
+	</script>
+	<script>
+	(function() {
+		const tabs = document.querySelectorAll('.demo-tab');
+		const videos = document.querySelectorAll('.demo-player video');
+		const sub = document.getElementById('demo-sub');
+		const subs = {
+			'mcp-claude-code-tui': 'Claude Code drives the phone. Type in the TUI, watch it act.',
+			'mcp-codex-tui': 'Codex operating a real phone over MCP.',
+			'mcp-agy-tui': 'Google Antigravity, same 62-tool body.',
+			'ghost-cli': 'ghost "check reddit" --device asus — one line, real phone.',
+			'langchain': 'Ghost tools inside a LangChain agent.',
+			'web-chat-gui': 'Chat in your browser, it drives the phone.',
+			'on-device-android': 'Model runs INSIDE the app. Airplane mode.',
+			'on-device-ios': 'Your iPhone talks to itself.',
+			'iphone-duolingo': 'Ghost does the Duolingo lesson. Streak lives.',
+		};
+		tabs.forEach(function(tab) {
+			tab.addEventListener('click', function() {
+				var target = tab.dataset.video;
+				tabs.forEach(function(t) { t.classList.remove('active'); });
+				tab.classList.add('active');
+				videos.forEach(function(v) {
+					if (v.dataset.key === target) {
+						v.classList.add('active');
+						v.currentTime = 0; // clean restart, never resume mid-scene
+						v.play();
+					} else {
+						v.classList.remove('active');
+						v.pause();
+						v.currentTime = 0;
+					}
+				});
+				sub.textContent = subs[target] || '';
+			});
+		});
+	})();
+	</script>
+</body>
+</html>

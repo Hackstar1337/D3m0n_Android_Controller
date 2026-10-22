@@ -1,0 +1,66 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+.mcp.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.csr
+*.mobileprovision
+*.tmp
+dashboard-auth.json
+settings.enc
+settings.key
+fleet.sqlite3
+
+# Python/runtime state
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+data/
+uploads/
+runs/
+logs/
+recordings/
+screenshots/
+backups/
+.recordings/
+
+# JavaScript/build output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+.astro/
+**/.astro/
+.vite/
+
+# IDE/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Local-only audit/task material
+.work/
+INSTALL_SOURCE.json
+
+# Local install/foreground exclusion lock
+.d3m0n-service.lock

@@ -1,0 +1,34 @@
+name: instagram
+display_name: Instagram
+description: Instagram automation skill — navigate profiles, search by hashtag
+version: "1.0.0"
+app_package: com.instagram.android
+author: C-K-Loan
+license: MIT
+
+exports:
+  actions:
+    - name: open_app
+      description: Launch Instagram and wait for home screen
+    - name: navigate_to_profile
+      description: Navigate to the Profile tab
+    - name: tap_search
+      description: Tap the search/explore icon
+
+popup_detectors:
+  - detect: "Turn on Notifications"
+    button: "Not Now"
+    label: "Notifications popup"
+  - detect: "Save Your Login Info"
+    button: "Not Now"
+    label: "Save login popup"
+  - detect: "Add Account"
+    button: "Not Now"
+    label: "Add account popup"
+  - detect: "Allow Instagram to access"
+    button: "Don't Allow"
+    label: "Permission request"
+
+tested_on:
+  - device: ASUS ROG Phone II
+    android: "12"

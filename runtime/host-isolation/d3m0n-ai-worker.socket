@@ -1,0 +1,15 @@
+[Unit]
+Description=D3m0n AI worker root IPC socket
+
+[Socket]
+ListenStream=/run/d3m0n-ai-worker.sock
+SocketMode=0660
+SocketUser=root
+SocketGroup=__OPERATOR__
+Accept=yes
+MaxConnections=3
+Backlog=3
+RemoveOnStop=yes
+
+[Install]
+WantedBy=sockets.target

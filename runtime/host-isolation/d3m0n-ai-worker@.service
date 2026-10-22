@@ -1,0 +1,27 @@
+[Unit]
+Description=D3m0n AI worker root IPC connection handler
+Requires=d3m0n-ai-worker.socket
+After=d3m0n-ai-worker.socket
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/python3 /usr/local/libexec/d3m0n-ai-worker-dispatcher.py
+User=root
+Group=root
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+UMask=0077
+PrivateTmp=yes
+PrivateNetwork=yes
+ProtectHome=yes
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX
+NoNewPrivileges=yes
+MemoryMax=64M
+TasksMax=8
+LimitNPROC=8
+LimitNOFILE=64
+RuntimeMaxSec=190s
+TimeoutStopSec=10s
+KillMode=control-group
