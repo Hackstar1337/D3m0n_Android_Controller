@@ -1,11 +1,16 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
+    [ValidateSet('Native','Docker')]
+    [string]$Mode = 'Native',
     [switch]$DryRun,
     [switch]$Yes,
     [switch]$NoStart,
     [int]$Port = 0,
+    [int]$UiPort = 0,
     [switch]$NoBrowser,
-    [switch]$InstallOptionalGit
+    [switch]$InstallOptionalGit,
+    [switch]$Production,
+    [switch]$Rebuild
 )
 
 # This is a local ZIP installer. It does not elevate, change execution policy persistently,
@@ -13,6 +18,36 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path -LiteralPath $PSScriptRoot).Path
+
+if ($Mode -eq 'Docker') {
+    $python = $null
+    foreach ($candidate in @(@{Name='py.exe'; Prefix=@('-3.12')}, @{Name='py.exe'; Prefix=@('-3.11')}, @{Name='python.exe'; Prefix=@()}, @{Name='python3.exe'; Prefix=@()})) {
+        $command = Get-Command $candidate.Name -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($command) {
+            $probeArgs = @($candidate.Prefix) + @('-c','import sys; assert sys.version_info[:2] in ((3,11),(3,12)); print(sys.executable)')
+            try {
+                $path = & $command.Source @probeArgs 2>$null
+                if ($LASTEXITCODE -eq 0 -and $path) { $python = [string]($path | Select-Object -Last 1); break }
+            } catch { continue }
+        }
+    }
+    if (-not $python) {
+        throw 'Docker setup needs existing Python 3.11/3.12 for its dependency-free bootstrap. Use the native prerequisite plan if missing; no global toolchain was installed.'
+    }
+    $dockerScript = Join-Path $repoRoot 'ops\docker_setup.py'
+    if (-not (Test-Path -LiteralPath $dockerScript -PathType Leaf)) { throw "Missing Docker bootstrap: $dockerScript" }
+    $dockerArgs = @($dockerScript, 'install')
+    if ($DryRun) { $dockerArgs += '--dry-run' }
+    if ($NoStart) { $dockerArgs += '--no-start' }
+    if ($Port -gt 0) { $dockerArgs += @('--api-port', [string]$Port) }
+    if ($UiPort -gt 0) { $dockerArgs += @('--ui-port', [string]$UiPort) }
+    if ($NoBrowser) { $dockerArgs += '--no-browser' }
+    if ($Production) { $dockerArgs += '--production' }
+    if ($Rebuild) { $dockerArgs += '--rebuild' }
+    & $python @dockerArgs
+    exit $LASTEXITCODE
+}
+
 $prereq = Join-Path $repoRoot 'scripts\windows-prerequisites.ps1'
 if (-not (Test-Path -LiteralPath $prereq -PathType Leaf)) { throw "Missing prerequisite checker: $prereq" }
 
@@ -95,5 +130,3 @@ try {
 }
 if ($code -eq 3010) { Write-Warning 'A reboot is required. Reboot, then rerun install.cmd.' }
 exit $code
-
-

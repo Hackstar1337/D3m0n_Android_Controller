@@ -2,6 +2,9 @@
 # Linux prerequisites for install.sh. No phone discovery or device commands.
 set -euo pipefail
 umask 022
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 readonly NODE_VERSION='22.23.4'
 readonly NODE_BASE_URL="https://nodejs.org/download/release/v${NODE_VERSION}"
@@ -121,7 +124,19 @@ if (( NODE_OK == 0 )); then
 fi
 
 ADB_OK=0
-command_exists adb && adb version >/dev/null 2>&1 && ADB_OK=1 || true
+ADB_NEEDS_FALLBACK=0
+ADB_DETAIL='missing'
+if command_exists adb; then
+  # version/help are deliberately the only ADB operations here. A successful
+  # protocol version is not enough: pairing requires both `pair` and `mdns`.
+  if [[ -n "$PYTHON" ]] && "$PYTHON" -c 'import sys; from ops.compatibility import probe_adb; p=probe_adb(sys.argv[1]); raise SystemExit(0 if p["available"] and p["capabilities"]["required_for_install"] else 1)' "$(command -v adb)" >/dev/null 2>&1; then
+    ADB_OK=1
+    ADB_DETAIL='USB/TCP control and wireless pairing available'
+  else
+    ADB_NEEDS_FALLBACK=1
+    ADB_DETAIL='adb exists but lacks a required capability (including pair/mdns)'
+  fi
+fi
 CURL_OK=0; command_exists curl && CURL_OK=1 || true
 TAR_OK=0; command_exists tar && TAR_OK=1 || true
 XZ_OK=0; command_exists xz && XZ_OK=1 || true
@@ -166,10 +181,17 @@ if (( NODE_NEEDS_DOWNLOAD )); then
   esac
 fi
 
-log "Detected: ${PRETTY_NAME:-unknown} (${OS_FAMILY}); Python=${PYTHON:-missing}; Node=${NODE_VERSION_TEXT:-missing}; adb=$([[ $ADB_OK == 1 ]] && echo ok || echo missing)"
+if (( ADB_NEEDS_FALLBACK )); then
+  case "$(uname -m)" in
+    x86_64|amd64) ;;
+    *) fail "unsupported Linux architecture $(uname -m) for the verified Google Platform-Tools fallback; no changes made." ;;
+  esac
+fi
+
+log "Detected: ${PRETTY_NAME:-unknown} (${OS_FAMILY}); Python=${PYTHON:-missing}; Node=${NODE_VERSION_TEXT:-missing}; adb=$([[ $ADB_OK == 1 ]] && echo ready || echo "$ADB_DETAIL")"
 log "Checks: venv=$([[ $PYTHON_VENV_OK == 1 ]] && echo ok || echo missing), pip=$([[ $PYTHON_PIP_OK == 1 ]] && echo ok || echo missing), npm=$([[ $NPM_OK == 1 ]] && echo ok || echo missing), curl=$([[ $CURL_OK == 1 ]] && echo ok || echo missing), tar=$([[ $TAR_OK == 1 ]] && echo ok || echo missing), xz=$([[ $XZ_OK == 1 ]] && echo ok || echo missing), sha256sum=$([[ $SHA_OK == 1 ]] && echo ok || echo missing)"
 
-if (( ${#PLAN_PKGS[@]} == 0 && NODE_NEEDS_DOWNLOAD == 0 )); then
+if (( ${#PLAN_PKGS[@]} == 0 && NODE_NEEDS_DOWNLOAD == 0 && ADB_NEEDS_FALLBACK == 0 )); then
   log 'All Linux prerequisites are ready; no OS or network changes are needed.'
   exit 0
 fi
@@ -187,6 +209,9 @@ fi
 if (( NODE_NEEDS_DOWNLOAD )); then
   log "  - download official Node.js v${NODE_VERSION} Linux archive for $(uname -m) into ${NODE_HOME_ROOT} (user-local; existing system node is not replaced)"
   log "  - verify its SHA256 against ${NODE_BASE_URL}/SHASUMS256.txt before extraction"
+fi
+if (( ADB_NEEDS_FALLBACK )); then
+  log '  - download Google Platform-Tools 37.0.1 for Linux x86_64 into the user-local d3m0n directory; verify the pinned SHA-256 before extraction'
 fi
 if (( DRY_RUN )); then
   log 'Dry-run: the plan was reported; no writes, package operations, privilege escalation, or network requests were performed.'
@@ -265,8 +290,8 @@ if (( NODE_NEEDS_DOWNLOAD )); then
   fi
 fi
 
-# A final read-only check is useful for a rerun/resume, but adb version is the
-# only adb operation permitted by this installer.
+# A final read-only check is useful for a rerun/resume. ADB version/help are the
+# only ADB operations permitted by this installer.
 PATH="${NODE_HOME_ROOT}/node-v${NODE_VERSION}-linux-x64/bin:${NODE_HOME_ROOT}/node-v${NODE_VERSION}-linux-arm64/bin:$PATH"
 export PATH
 for required in python3.11 python3.12 node npm adb curl tar xz sha256sum; do
@@ -280,5 +305,11 @@ done
 "$final_python" -c 'import venv, ensurepip' >/dev/null 2>&1 || fail 'Python venv/ensurepip support is still unavailable; install the matching -venv package and resume.'
 node --version >/dev/null 2>&1 || fail 'Node.js is still unavailable after installation.'
 npm --version >/dev/null 2>&1 || fail 'npm is still unavailable after installation.'
-adb version >/dev/null 2>&1 || fail 'adb is still unavailable after installation.'
+if (( ADB_NEEDS_FALLBACK )); then
+  "$final_python" "$SCRIPT_DIR/install_platform_tools.py" --platform linux --arch "$(uname -m)" --destination "${HOME}/.local/share/d3m0n/android" || fail 'verified Platform-Tools fallback failed; no unverified ADB was installed.'
+  export PATH="${HOME}/.local/share/d3m0n/android/platform-tools:$PATH"
+fi
+adb_path=$(command -v adb || true)
+[[ -n "$adb_path" ]] || fail 'adb is still unavailable after installation.'
+"$final_python" -c 'import sys; from ops.compatibility import probe_adb; p=probe_adb(sys.argv[1]); raise SystemExit(0 if p["available"] and p["capabilities"]["required_for_install"] else 1)' "$adb_path" || fail 'ADB is present but lacks USB/TCP or wireless-pairing capabilities; rerun to use the verified fallback.'
 log 'Prerequisites are ready. Existing project files, .env, and state were not modified.'

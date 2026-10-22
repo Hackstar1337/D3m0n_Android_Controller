@@ -22,7 +22,10 @@ Ubuntu/Debian and Fedora are supported by the guided prerequisite flow. Review t
 
 ### Your URL
 
-Both installers create a project-local Python environment, install backend dependencies, build the dashboard and start it. **Only after the local server passes its readiness check**, setup prints and opens a URL such as:
+Both installers create a project-local Python environment, install backend
+dependencies from the hashed lock, build the dashboard and start it. **Only
+after the local server passes its readiness check**, setup prints and opens a URL
+such as:
 
 ```text
 DASHBOARD READY: http://127.0.0.1:5055/?discover
@@ -32,7 +35,19 @@ If that port is already occupied, setup chooses a free local port rather than st
 
 Next time, double-click **`start.cmd`** on Windows or run **`bash start.sh`** on Linux. [Full installation, lifecycle commands and troubleshooting](docs/INSTALLATION.md).
 
-Missing tools are never installed without approval. `-Yes` / `--yes` is available for an owner who has already reviewed the plan; UAC, package-license prompts and your first password may still require input. Use `install.cmd -DryRun` or `bash install.sh --dry-run` to inspect without changes. Windows machines without WinGet/App Installer and unsupported Linux distributions receive explicit setup instructions instead of a hidden remote-script bootstrap.
+### Docker development mode
+
+For an isolated development environment, install Docker Desktop (Windows) or
+Docker Engine plus Compose (Linux), extract/clone the checkout, and run
+`start-dev.cmd` on Windows or `docker compose -f compose.dev.yaml up -d --wait`
+on Linux. This mode binds services to loopback, preserves private state in named
+volumes, and uses separate backend/frontend containers. It does **not** provide
+Windows USB passthrough automatically; use native mode for straightforward USB
+access or configure wireless debugging explicitly. See
+[Docker development](DEVELOPMENT-DOCKER.md) and the
+[reliability checks](docs/INSTALLATION-RELIABILITY.md).
+
+Missing tools are never installed without approval. `-Yes` / `--yes` is available for an owner who has already reviewed the plan; UAC, package-license prompts and your first password may still require input. Use `install.cmd -DryRun` or `bash install.sh --dry-run` to inspect without changes. Windows machines without WinGet/App Installer and unsupported Linux distributions receive explicit setup instructions instead of a hidden remote-script bootstrap. CI separately proves real non-admin resumable installs on supported Windows/Linux runners and accepts only disposable Docker projects before producing a release ZIP.
 
 ## Find your phones
 
@@ -55,6 +70,16 @@ The default URL is local to the computer. LAN/public access requires deliberate 
 All prior source modules and features remain. [Validation evidence](docs/GUIDED-INSTALL-VALIDATION.md) distinguishes tested Windows/Linux lifecycle behavior, mocked prerequisites and optional real-device/runtime setup. [Earlier backend/frontend coverage](docs/PORTABLE-RELEASE-VALIDATION.md) is also retained. No automatic production deployment is attached to this repository.
 
 Never commit `.env`, private keys, ADB identities, credentials, profiles, databases, uploads, recordings or logs. See [SECURITY.md](SECURITY.md), [.env.example](.env.example), and the source-only release guard in `scripts/release_guard.py`.
+
+### Qoder Git push guidance
+
+Qoder edits this checkout but does not need (and must not receive) embedded Git
+credentials. Review changes and CI in Qoder, then use the configured `origin`
+remote and push the intended branch deliberately, for example
+`git push origin main`. Do not auto-push, rewrite remotes, or paste tokens into
+workspace files, scripts, `.env`, or commit messages. A release ZIP is produced
+only after the CI gate described in [Installation reliability](docs/INSTALLATION-RELIABILITY.md)
+passes.
 
 ## License
 

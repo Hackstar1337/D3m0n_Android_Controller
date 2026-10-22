@@ -1,0 +1,26 @@
+{
+  "folders": [{"name": "D3m0n Android Controller", "path": "."}],
+  "settings": {
+    "files.exclude": {"**/__pycache__": true, "**/*.egg-info": true},
+    "files.watcherExclude": {"**/node_modules/**": true, "**/.git/objects/**": true},
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "extensions": {"recommendations": ["ms-python.python", "Vue.volar", "charliermarsh.ruff", "ms-azuretools.vscode-docker", "ms-vscode-remote.remote-containers"]},
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {"label": "D3m0n: Start (development)", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "start"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Start (production)", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "start", "-Production"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Stop (keep state)", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "stop"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Status/readiness", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "status"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Logs", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "logs"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Rebuild cached images", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "rebuild"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Backend shell", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "shell"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Frontend shell", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "frontend-shell"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Frontend production build", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "build-ui"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Set dashboard password", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "password"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []},
+      {"label": "D3m0n: Test frontend/backend", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/dev.ps1", "test"], "options": {"cwd": "${workspaceFolder}"}, "problemMatcher": []}
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+# syntax=docker/dockerfile:1
+FROM node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS frontend-deps
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci && sha256sum package-lock.json | awk '{print $1}' > node_modules/.d3m0n-lock-fingerprint
+
+FROM frontend-deps AS frontend-build
+COPY frontend/ ./
+RUN npm run build
+
+FROM frontend-build AS frontend-dev
+COPY scripts/frontend_entrypoint.sh /usr/local/bin/frontend-entrypoint
+RUN chmod 0755 /usr/local/bin/frontend-entrypoint && chown -R node:node /app
+USER node
+EXPOSE 5173
+ENTRYPOINT ["/usr/local/bin/frontend-entrypoint"]
+
+FROM frontend-build AS frontend-prod
+
+FROM python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70 AS backend-runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    HOME=/home/droid D3M0N_STATE_DIR=/state DB_PATH=/state/gitd.db \
+    D3M0N_DASHBOARD_AUTH_FILE=/state/dashboard-auth.json \
+    PATH="/opt/android/platform-tools:${PATH}"
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 droid && useradd --uid 1000 --gid droid --create-home droid \
+    && mkdir -p /state /home/droid/.android && chown -R droid:droid /state /home/droid
+COPY requirements/backend.lock requirements/build.lock /tmp/requirements/
+RUN --mount=type=cache,target=/root/.cache/pip pip install --require-hashes -r /tmp/requirements/backend.lock \
+    && pip install --require-hashes -r /tmp/requirements/build.lock
+# These dependency-free files alone govern the verified SDK layer.
+COPY ops/__init__.py ops/compatibility.py ops/install-compatibility.json /tmp/sdk/ops/
+COPY scripts/install_container_platform_tools.py scripts/install_platform_tools.py /tmp/sdk/scripts/
+RUN python /tmp/sdk/scripts/install_container_platform_tools.py && rm -rf /tmp/sdk
+
+FROM backend-runtime AS backend-dev
+COPY requirements/dev.lock /tmp/requirements/dev.lock
+RUN --mount=type=cache,target=/root/.cache/pip pip install --require-hashes -r /tmp/requirements/dev.lock
+WORKDIR /app
+COPY --chown=droid:droid . .
+RUN pip install --no-build-isolation --no-deps -e . && pip check
+COPY --chown=droid:droid --from=frontend-build /app/frontend/dist /app/frontend/dist
+USER droid
+EXPOSE 5055
+CMD ["python", "-m", "uvicorn", "ops.server:app", "--host", "0.0.0.0", "--port", "5055", "--no-proxy-headers", "--reload", "--reload-dir", "/app/gitd", "--reload-dir", "/app/ops", "--reload-dir", "/app/integrations", "--reload-dir", "/app/ai_contracts"]
+
+FROM backend-runtime AS backend-prod
+WORKDIR /app
+COPY --chown=droid:droid . .
+RUN pip install --no-build-isolation --no-deps . && pip check
+COPY --chown=droid:droid --from=frontend-build /app/frontend/dist /app/frontend/dist
+USER droid
+EXPOSE 5055
+CMD ["python", "-m", "uvicorn", "ops.server:app", "--host", "0.0.0.0", "--port", "5055", "--no-proxy-headers"]

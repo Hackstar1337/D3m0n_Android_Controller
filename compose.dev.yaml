@@ -1,0 +1,73 @@
+name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}
+services:
+  backend:
+    image: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}-backend:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend-dev
+    init: true
+    ports:
+      - "127.0.0.1:${D3M0N_HOST_API_PORT:-5055}:5055"
+    environment:
+      D3M0N_STATE_DIR: /state
+      D3M0N_DASHBOARD_AUTH_FILE: /state/dashboard-auth.json
+      DB_PATH: /state/gitd.db
+      D3M0N_ALLOWED_ORIGINS: "http://localhost:${D3M0N_HOST_API_PORT:-5055},http://127.0.0.1:${D3M0N_HOST_API_PORT:-5055},http://localhost:${D3M0N_HOST_UI_PORT:-5173},http://127.0.0.1:${D3M0N_HOST_UI_PORT:-5173}"
+      GITD_CORS_ORIGINS: "http://localhost:${D3M0N_HOST_API_PORT:-5055},http://127.0.0.1:${D3M0N_HOST_API_PORT:-5055},http://localhost:${D3M0N_HOST_UI_PORT:-5173},http://127.0.0.1:${D3M0N_HOST_UI_PORT:-5173}"
+      WATCHFILES_FORCE_POLLING: "true"
+      WATCHFILES_POLL_DELAY_MS: "500"
+    volumes:
+      - .:/app
+      - frontend_dist:/app/frontend/dist:ro
+      - private_state:/state
+      - adb_identity:/home/droid/.android
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      # Liveness is intentionally separate from auth readiness. A fresh state
+      # must boot far enough for the bootstrap prompt to create its password.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5055/api/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 30s
+  frontend:
+    image: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}-frontend:dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: frontend-dev
+    init: true
+    ports:
+      - "127.0.0.1:${D3M0N_HOST_UI_PORT:-5173}:5173"
+    environment:
+      D3M0N_API_TARGET: http://backend:5055
+      D3M0N_USE_POLLING: "true"
+    volumes:
+      - .:/app
+      - frontend_modules:/app/frontend/node_modules
+      - frontend_dist:/app/frontend/dist
+    depends_on:
+      backend:
+        condition: service_healthy
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 20s
+volumes:
+  # Explicit names preserve the existing user's state and ADB trust volumes.
+  private_state:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_private_state
+  adb_identity:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_adb_identity
+  frontend_modules:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_frontend_modules
+  frontend_dist:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_frontend_dist

@@ -14,6 +14,7 @@ import http.client
 import json
 import os
 from pathlib import Path
+import platform
 import secrets
 import signal
 import shutil
@@ -251,6 +252,164 @@ def ensure_auth() -> None:
                    cwd=ROOT, check=True)
 
 
+def _run_install_command(command: list[str], *, logger, label: str) -> None:
+    """Run an installer command without copying its output to the terminal."""
+    from ops.install_state import redact_text
+    try:
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
+    except OSError as exc:
+        logger.write(f'{label} could not start: {redact_text(exc)}', level='error')
+        raise RuntimeError(f'{label} could not start. Private diagnostics: {logger.path}') from exc
+    output = (result.stdout or '') + (('\n' + result.stderr) if result.stderr else '')
+    logger.command_output(output, exit_code=result.returncode)
+    if result.returncode:
+        raise RuntimeError(f'{label} failed with exit code {result.returncode}. Private diagnostics: {logger.path}')
+
+
+def _frontend_build_recovery(root: Path, directory: Path) -> None:
+    """Recover an interrupted isolated frontend build without touching a good dist."""
+    marker = Path(directory) / 'frontend-build.json'
+    if not marker.is_file():
+        return
+    try:
+        value = json.loads(marker.read_text(encoding='utf-8'))
+        destination = (root / 'frontend' / 'dist').resolve()
+        if Path(str(value.get('destination', ''))).resolve() != destination:
+            return
+        staging_value = value.get('staging', '')
+        staging = Path(str(staging_value)).resolve() if staging_value else None
+        backup_value = value.get('backup', '')
+        backup = Path(str(backup_value)).resolve() if backup_value else None
+        if staging and staging.parent not in {Path(directory).resolve(), destination.parent}:
+            return
+        if staging and staging.parent == destination.parent and not staging.name.startswith('.d3m0n-frontend-staged-'):
+            return
+        if backup and backup.parent != destination.parent:
+            return
+        # Older markers may describe the pre-build move; restore that artifact
+        # only when the live destination is absent. New markers leave dist alone.
+        if not destination.exists() and backup and backup.exists():
+            os.replace(backup, destination)
+        if staging and staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)
+        marker.unlink(missing_ok=True)
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        # Do not guess at arbitrary directories when a recovery marker is malformed.
+        return
+
+
+def _build_frontend_staged(npm: str, *, directory: Path, logger) -> Path:
+    """Build away from the live artifact, then atomically publish it."""
+    from ops.install_state import atomic_promote_directory
+    frontend = ROOT / 'frontend'
+    destination = frontend / 'dist'
+    _frontend_build_recovery(ROOT, directory)
+    staging = frontend / f'.d3m0n-frontend-staged-{secrets.token_hex(8)}'
+    marker = directory / 'frontend-build.json'
+    from ops.platform_config import atomic_write_json
+    atomic_write_json(marker, {'destination': str(destination.resolve()), 'backup': None,
+                               'staging': str(staging.resolve())})
+    try:
+        _run_install_command([npm, '--prefix', str(frontend), 'run', 'type-check'], logger=logger,
+                              label='Frontend type check')
+        _run_install_command([npm, '--prefix', str(frontend), 'run', 'build-only', '--',
+                              '--outDir', str(staging)], logger=logger, label='Frontend build')
+        if not staging.is_dir() or not (staging / 'index.html').is_file():
+            raise RuntimeError(f'Frontend build produced no valid index.html. Private diagnostics: {logger.path}')
+        atomic_promote_directory(staging, destination, directory)
+        marker.unlink(missing_ok=True)
+        return destination
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        marker.unlink(missing_ok=True)
+        raise
+
+
+def _install_provenance() -> dict[str, str]:
+    from ops.install_state import source_revision
+    node = shutil.which('node.exe' if os.name == 'nt' else 'node')
+    node_version = 'unavailable'
+    if node:
+        try:
+            node_version = subprocess.run([node, '--version'], capture_output=True, text=True,
+                                          check=False, timeout=5).stdout.strip() or 'unknown'
+        except (OSError, subprocess.SubprocessError):
+            node_version = 'unknown'
+    return {'source_revision': source_revision(ROOT), 'python': platform.python_version(),
+            'platform': platform.platform(), 'node': node_version}
+
+
+def _install_stage(state: dict, state_path: Path, name: str, fingerprint: str, action, *,
+                   outputs=(), output_root: Path | None = None, validator=None) -> None:
+    from ops.install_state import StageLogger, mark_stage, stage_complete
+    log_dir = state_path.parent / 'logs'
+    if stage_complete(state, name, fingerprint, root=output_root):
+        if validator is None or validator():
+            return
+    with StageLogger(log_dir, name) as logger:
+        logger.write('stage started', fingerprint=fingerprint)
+        try:
+            action(logger)
+            mark_stage(state, name, fingerprint, outputs=outputs, root=output_root, log_path=logger.path)
+            from ops.install_state import save_install_state
+            save_install_state(state, state_path)
+            logger.write('stage completed')
+        except BaseException as exc:
+            logger.write(f'stage failed: {exc}', level='error')
+            raise
+
+
+def _tool_version(command: str, argument: str = '--version') -> str:
+    try:
+        result = subprocess.run([command, argument], cwd=ROOT, capture_output=True, text=True,
+                                check=False, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    return (result.stdout or result.stderr or '').strip()
+
+
+def _validate_prerequisites(logger) -> None:
+    """Validate the guided runtime contract without installing host software."""
+    from ops.compatibility import load_compatibility, node_supported, python_supported
+    manifest = load_compatibility(ROOT / 'ops' / 'install-compatibility.json')
+    python_version = platform.python_version()
+    if not python_supported(python_version, guided=True):
+        raise RuntimeError(f'Python {python_version} is outside the guided compatibility range; use Python 3.11 or 3.12.')
+    node = shutil.which('node.exe' if os.name == 'nt' else 'node')
+    npm = shutil.which('npm.cmd' if os.name == 'nt' else 'npm')
+    if not node or not npm:
+        raise RuntimeError('Node.js and npm are required by the native installer; run the platform prerequisite installer first.')
+    node_version = _tool_version(node)
+    if not node_supported(node_version):
+        raise RuntimeError(f'Node.js {node_version or "unknown"} is outside the compatibility range in install-compatibility.json.')
+    logger.write('Prerequisite compatibility validated', python=python_version, node=node_version,
+                 npm=_tool_version(npm), profiles=manifest.get('diagnostic_profiles', {}))
+
+
+_BACKEND_IMPORTS = (
+    'fastapi', 'uvicorn', 'sqlalchemy', 'alembic', 'pydantic', 'pydantic_settings',
+    'requests', 'dotenv', 'yaml', 'psutil', 'docker', 'openai', 'mcp', 'langfuse',
+    'cryptography', 'httpx', 'multipart', 'PIL', 'websocket', 'websockets', 'gitd', 'ops',
+)
+
+
+def _backend_is_healthy(python: Path) -> bool:
+    """Check the installed interpreter, dependency metadata, and import surface."""
+    if not python.is_file():
+        return False
+    try:
+        checked = subprocess.run([str(python), '-m', 'pip', 'check'], cwd=ROOT,
+                                 capture_output=True, text=True, check=False, timeout=60)
+        if checked.returncode:
+            return False
+        script = 'import ' + ','.join(_BACKEND_IMPORTS)
+        imported = subprocess.run([str(python), '-c', script], cwd=ROOT,
+                                  capture_output=True, text=True, check=False, timeout=60)
+        return imported.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def start(port: int, no_browser: bool = False) -> str:
     if not venv_python().is_file() or not (ROOT / 'frontend/dist/index.html').is_file():
         raise RuntimeError('Installation is incomplete. Run install.cmd or bash install.sh first.')
@@ -312,39 +471,137 @@ def install(args) -> int:
         if (ROOT / '.venv').exists() and not (runtime_dir() / 'installed.json').exists():
             if input('An existing environment may belong to an older/foreground service. Have you stopped ALL services using this checkout? [y/N] ').strip().lower() not in {'y','yes'}:
                 raise RuntimeError('Existing environment preserved. Stop its services, then rerun setup.')
-        subprocess.run([sys.executable, '-m', 'venv', str(ROOT / '.venv')], check=True)
+        from ops.install_state import (fingerprint_bytes, fingerprint_paths, fingerprint_tree,
+                                       load_install_state, mark_stage, new_install_state,
+                                       save_install_state, sha256_file, recover_atomic_promotion)
+        runtime = runtime_dir()
+        recover_atomic_promotion(runtime, destination=ROOT / 'frontend' / 'dist')
+        state_path = runtime / 'installed.json'
+        state = load_install_state(state_path, expected_repo=ROOT)
+        if state is None:
+            state = new_install_state(ROOT, provenance=_install_provenance())
+            save_install_state(state, state_path)
+        else:
+            state['provenance'] = _install_provenance()
+            save_install_state(state, state_path)
+        pyproject = ROOT / 'pyproject.toml'
+        compat = ROOT / 'ops' / 'install-compatibility.json'
+        backend_lock = ROOT / 'requirements' / 'backend.lock'
+        build_lock = ROOT / 'requirements' / 'build.lock'
+        if not backend_lock.is_file() or not build_lock.is_file():
+            raise RuntimeError('Native install requires requirements/backend.lock and requirements/build.lock; no unpinned fallback is allowed.')
+        prereq_fp = fingerprint_bytes((fingerprint_paths([pyproject, compat]) + json.dumps(_install_provenance(), sort_keys=True)).encode())
+        _install_stage(state, state_path, 'prerequisites', prereq_fp,
+                       _validate_prerequisites, outputs=[pyproject, compat], output_root=ROOT)
+        backend_inputs = [pyproject, backend_lock, build_lock]
+        backend_fp = fingerprint_bytes((fingerprint_paths(backend_inputs) + platform.python_version()).encode())
         py = str(venv_python())
-        subprocess.run([py, '-m', 'pip', 'install', '--upgrade', 'pip'], cwd=ROOT, check=True)
-        subprocess.run([py, '-m', 'pip', 'install', '.[d3m0n]'], cwd=ROOT, check=True)
+        def install_backend(logger):
+            _run_install_command([sys.executable, '-m', 'venv', str(ROOT / '.venv')], logger=logger,
+                                 label='Python environment creation')
+            _run_install_command([py, '-m', 'pip', 'install', '--require-hashes', '-r', str(backend_lock)],
+                                 logger=logger, label='Backend dependency installation')
+            _run_install_command([py, '-m', 'pip', 'install', '--require-hashes', '-r', str(build_lock)],
+                                 logger=logger, label='Locked build dependency installation')
+            _run_install_command([py, '-m', 'pip', 'install', '--no-deps',
+                                  '--no-build-isolation', '-e', str(ROOT)], logger=logger,
+                                 label='Editable project installation')
+            if not _backend_is_healthy(venv_python()):
+                raise RuntimeError('Backend pip check/import validation failed after installation.')
+        _install_stage(state, state_path, 'backend_dependencies', backend_fp, install_backend,
+                       outputs=[venv_python()], output_root=ROOT,
+                       validator=lambda: _backend_is_healthy(venv_python()))
+        py = str(venv_python())
         npm = shutil.which('npm.cmd' if os.name == 'nt' else 'npm')
         if not npm:
             raise RuntimeError('npm is missing. Rerun the guided OS prerequisite installer.')
-        subprocess.run([npm, 'ci', '--prefix', str(ROOT / 'frontend')], cwd=ROOT, check=True)
-        subprocess.run([npm, '--prefix', str(ROOT / 'frontend'), 'run', 'build'], cwd=ROOT, check=True)
-        ensure_auth()
-        private_write(runtime_dir() / 'installed.json', {'repo': str(ROOT), 'setup_version': 1})
+        package_json = ROOT / 'frontend' / 'package.json'
+        package_lock = ROOT / 'frontend' / 'package-lock.json'
+        frontend_fp = fingerprint_bytes((fingerprint_paths([package_json, package_lock]) +
+                                         platform.python_version()).encode())
+        _install_stage(state, state_path, 'frontend_dependencies', frontend_fp,
+                       lambda logger: _run_install_command([npm, 'ci', '--prefix', str(ROOT / 'frontend')],
+                                                           logger=logger, label='Frontend dependency installation'),
+                       outputs=[ROOT / 'frontend' / 'node_modules' / '.package-lock.json',
+                                ROOT / 'frontend' / 'node_modules' / 'vite' / 'package.json'], output_root=ROOT,
+                       validator=lambda: subprocess.run([npm, 'ls', '--prefix', str(ROOT / 'frontend'), '--depth=0'],
+                                                        capture_output=True, check=False).returncode == 0)
+        frontend_source_fp = fingerprint_tree(ROOT / 'frontend', exclude=('node_modules', 'dist'))
+        _install_stage(state, state_path, 'frontend_build', frontend_source_fp,
+                       lambda logger: _build_frontend_staged(npm, directory=runtime, logger=logger),
+                       outputs=[ROOT / 'frontend' / 'dist'], output_root=ROOT)
+        auth_file = Path(os.environ.get('D3M0N_DASHBOARD_AUTH_FILE', str(runtime.parent.parent / 'dashboard-auth.json')))
+        auth_fp = fingerprint_bytes((str(auth_file) + (sha256_file(auth_file) if auth_file.is_file() else 'missing')).encode())
+        _install_stage(state, state_path, 'authentication', auth_fp,
+                       lambda logger: (ensure_auth(), logger.write('Dashboard authentication is configured.')),
+                       outputs=[auth_file])
     print('Installation complete; existing passwords, .env and phone/profile state were preserved.')
     if not args.no_start:
         start(args.port, args.no_browser)
+        # Readiness is intentionally recorded only after the owned supervisor passes
+        # its authenticated health check; --no-start leaves it pending for start.
+        state = load_install_state(state_path, expected_repo=ROOT) or state
+        from ops.install_state import mark_stage, save_install_state
+        readiness_fp = fingerprint_bytes((str(args.port) + str(state.get('stages', {}).get('authentication', {}))).encode())
+        mark_stage(state, 'readiness', readiness_fp, outputs=[ROOT / 'frontend' / 'dist'], root=ROOT)
+        save_install_state(state, state_path)
     else:
         print('Start later: .venv Python -m ops.setup_manager start')
     return 0
 
 
+def backup_state(source: str | None, destination: str | None) -> int:
+    from ops.state_backup import create_backup
+    if source is None:
+        active = control(load_record())
+        if active and active.get('running'):
+            raise RuntimeError('The native supervisor is running. Stop it, create the backup, then start it again: '
+                               'python -m ops.setup_manager stop; python -m ops.setup_manager backup; '
+                               'python -m ops.setup_manager start')
+    path = create_backup(Path(source) if source else None, Path(destination) if destination else None)
+    print(f'Private state backup created: {path}')
+    print('This archive contains secret-bearing state; store it securely and never commit it.')
+    return 0
+
+
+def restore_state(archive: str | None, target: str | None) -> int:
+    if not archive or not target:
+        raise ValueError('restore requires --archive ARCHIVE and --target NEW_TARGET')
+    from ops.state_backup import restore_backup
+    path = restore_backup(Path(archive), Path(target))
+    print(f'Private state restored to new target: {path}')
+    print('The live installation was not overwritten.')
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['install', 'start', 'status', 'stop', '_serve'])
+    parser.add_argument('command', choices=['install', 'start', 'status', 'stop', 'backup', 'restore', '_serve'])
     parser.add_argument('--port', type=int, default=5055)
     parser.add_argument('--no-start', action='store_true')
     parser.add_argument('--no-browser', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--instance', help=argparse.SUPPRESS)
+    parser.add_argument('--source')
+    parser.add_argument('--destination')
+    parser.add_argument('--archive')
+    parser.add_argument('--target')
     args = parser.parse_args(argv)
     if not 1 <= args.port <= 65535:
         parser.error('Port must be between 1 and 65535')
     try:
         if args.command == 'install':
             return install(args)
+        if args.command == 'backup':
+            if args.dry_run:
+                print('Dry run: no state was read or archive was created.')
+                return 0
+            return backup_state(args.source, args.destination)
+        if args.command == 'restore':
+            if args.dry_run:
+                print('Dry run: no archive was read and no target was created.')
+                return 0
+            return restore_state(args.archive, args.target)
         if args.dry_run:
             print('Dry run: no processes, state, network requests or installations started.')
             return 0

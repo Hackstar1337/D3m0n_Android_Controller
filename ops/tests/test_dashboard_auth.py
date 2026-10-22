@@ -82,6 +82,11 @@ class Recorder:
 class DashboardAuthTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
+        self.previous_env = {name: os.environ.get(name) for name in ("D3M0N_ALLOWED_ORIGINS", "GITD_CORS_ORIGINS")}
+        # Keep origin policy hermetic: this suite must not inherit a developer's
+        # live public origin or mutate it for subsequent tests.
+        os.environ["D3M0N_ALLOWED_ORIGINS"] = "https://dashboard.example.test,http://127.0.0.1:5055"
+        os.environ["GITD_CORS_ORIGINS"] = "https://dashboard.example.test,http://127.0.0.1:5055"
         root = Path(self.temp.name)
         self.auth_file = root / "state" / "dashboard-auth.json"
         self.dist = root / "dist"
@@ -98,6 +103,11 @@ class DashboardAuthTests(unittest.IsolatedAsyncioTestCase):
 
     def tearDown(self):
         da.state = self.previous_state
+        for name, value in self.previous_env.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
         self.temp.cleanup()
 
     def full_app(self):

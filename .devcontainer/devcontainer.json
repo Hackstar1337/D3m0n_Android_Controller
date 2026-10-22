@@ -1,0 +1,16 @@
+{
+  "name": "D3m0n Droid - Python backend",
+  "dockerComposeFile": "../compose.dev.yaml",
+  "service": "backend",
+  "runServices": ["backend", "frontend"],
+  "workspaceFolder": "/app",
+  "remoteUser": "droid",
+  "shutdownAction": "none",
+  "overrideCommand": false,
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "charliermarsh.ruff", "Vue.volar", "ms-azuretools.vscode-docker"],
+      "settings": {"python.defaultInterpreterPath": "/usr/local/bin/python", "editor.formatOnSave": true}
+    }
+  }
+}

@@ -12,10 +12,14 @@ export default defineConfig({
   },
   server: {
     port: 6175,
+    watch: {
+      usePolling: process.env.D3M0N_USE_POLLING === 'true',
+      interval: 500,
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:5055',
-        changeOrigin: true,
+        target: process.env.D3M0N_API_TARGET || 'http://localhost:5055',
+        changeOrigin: false,
         ws: true,   // proxy WebSocket upgrades (H.264 stream at /api/phone/h264/*)
         // Required for SSE (Server-Sent Events) — disable response buffering
         configure: (proxy) => {

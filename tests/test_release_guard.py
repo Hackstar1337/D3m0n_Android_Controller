@@ -19,6 +19,10 @@ _REQUIRED_FILES = (
     "ai_contracts/models.py",
     "frontend/src/App.vue",
     "ops/scrcpy-server-v5.0.1.jar",
+    "compose.prod.yaml",
+    "requirements/backend.lock",
+    "requirements/dev.lock",
+    "requirements/build.lock",
 )
 _REQUIRED_DIRS = ("gitd", "ops", "ai_contracts", "frontend", "tests")
 

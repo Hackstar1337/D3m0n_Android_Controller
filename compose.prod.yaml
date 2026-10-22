@@ -1,0 +1,33 @@
+name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}
+services:
+  backend:
+    image: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}-backend:prod
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend-prod
+    init: true
+    ports:
+      - "127.0.0.1:${D3M0N_HOST_API_PORT:-5055}:5055"
+    environment:
+      D3M0N_STATE_DIR: /state
+      D3M0N_DASHBOARD_AUTH_FILE: /state/dashboard-auth.json
+      DB_PATH: /state/gitd.db
+      D3M0N_ALLOWED_ORIGINS: "http://localhost:${D3M0N_HOST_API_PORT:-5055},http://127.0.0.1:${D3M0N_HOST_API_PORT:-5055}"
+      GITD_CORS_ORIGINS: "http://localhost:${D3M0N_HOST_API_PORT:-5055},http://127.0.0.1:${D3M0N_HOST_API_PORT:-5055}"
+    volumes:
+      - private_state:/state
+      - adb_identity:/home/droid/.android
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5055/api/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 30s
+volumes:
+  private_state:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_private_state
+  adb_identity:
+    name: ${D3M0N_COMPOSE_PROJECT:-d3m0n-droid}_adb_identity

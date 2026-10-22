@@ -18,6 +18,39 @@ Windows needs Microsoft's App Installer/WinGet. If it is absent/disabled, setup 
 
 `-Yes` means you reviewed and approve the prerequisite plan. It does not bypass Windows security, licenses, the first dashboard password or phone pairing.
 
+The application dependency install is driven by the checked-in hashed lockfiles;
+the setup manager does not install OS prerequisites. CI runs the real native
+manager as a non-admin process on supported Windows and Linux runners with an
+isolated temporary state root, a stdin-installed throwaway auth hash, and
+`--no-browser`. It stops the owned instance in cleanup and reruns the manager to
+verify resumable state. This evidence does not claim that a local machine has
+USB drivers, optional integrations, or external service credentials.
+
+## Docker development mode
+
+Docker is an explicit alternative to native installation for isolated development
+and wireless debugging. It is not an automatic Windows USB passthrough solution.
+Install Docker Desktop with its Linux engine, extract the ZIP or clone the
+checkout, then run:
+
+```powershell
+.\start-dev.cmd
+```
+
+or, on Linux:
+
+```bash
+docker compose -f compose.dev.yaml up -d --wait
+```
+
+The live-edit dashboard uses the actual loopback URL `http://127.0.0.1:5173/`;
+the built dashboard/API uses `http://127.0.0.1:5055/`. Override host ports with
+`D3M0N_HOST_UI_PORT` and `D3M0N_HOST_API_PORT` if they are occupied; never stop an
+unrelated listener. Named private-state and ADB-identity volumes survive normal
+recreation. Do not use `down -v` as generic repair because it deletes this
+project's state and device trust identities. Full commands and USB/wireless
+limitations are in [DEVELOPMENT-DOCKER.md](../DEVELOPMENT-DOCKER.md).
+
 ## Linux: one command
 
 From the extracted/cloned folder:
@@ -93,3 +126,12 @@ Run installed `.venv` Python `-m ops.doctor` for read-only diagnostics. A passwo
 The older scripts/bootstrap.* and foreground scripts/start.* remain available for advanced manual use. Do not mix foreground and background servers against the same state. Back up state before upgrading. The project has no complete Alembic revision chain: arbitrary `alembic upgrade head` is not an install requirement.
 
 Official setup references: [Microsoft WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget/install), [Android Platform-Tools](https://developer.android.com/tools/releases/platform-tools), [ADB debugging](https://developer.android.com/tools/adb), [Node.js downloads](https://nodejs.org/en/download/), [Python for Windows](https://www.python.org/downloads/windows/).
+
+## Qoder and Git pushes
+
+Qoder can edit the extracted checkout, but installation and editor helpers never
+commit or push. Review `git diff --check` and the CI result, then push deliberately
+to the repository owner's configured remote (normally `git push origin main`), or
+use Qoder's Source Control panel. Never embed GitHub tokens, passwords, private
+keys, or guessed remote URLs in this folder. Release packaging is blocked until
+the CI workflow succeeds; see [Installation reliability](INSTALLATION-RELIABILITY.md).

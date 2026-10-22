@@ -1,0 +1,48 @@
+{
+    "schema_version":  1,
+    "project":  "ghost-in-the-droid",
+    "python":  {
+                   "package_requires":  "\u003e=3.10,\u003c3.13",
+                   "guided_versions":  [
+                                           "3.11",
+                                           "3.12"
+                                       ],
+                   "tested_platforms":  [
+                                            "windows-x86_64",
+                                            "linux-x86_64"
+                                        ],
+                   "lock_generator":  "pip-tools 7.6.2"
+               },
+    "node":  {
+                 "required":  "^20.19.0 or \u003e=22.12.0",
+                 "tested_major":  "24",
+                 "tested_image":  "node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205"
+             },
+    "base_images":  {
+                        "frontend_dev":  "node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205",
+                        "backend_dev":  "python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70"
+                    },
+    "platform_tools":  {
+                           "version":  "37.0.1",
+                           "linux_x86_64":  {
+                                                "url":  "https://dl.google.com/android/repository/platform-tools_r37.0.1-linux.zip",
+                                                "sha256":  "d230f13842f60f782a8645f9c813f8f845bf36089ea7289f28c48f17979313f1"
+                                            },
+                           "windows_x86_64":  {
+                                                  "archive":  "platform-tools_r37.0.1-win.zip",
+                                                  "url":  "https://dl.google.com/android/repository/platform-tools_r37.0.1-win.zip",
+                                                  "sha256":  "45f4d63113e895ebde0c90f194099a4676b6ac653bd28d54314a9e022bbc1a99",
+                                                  "verified":  true,
+                                                  "automatic_download":  true,
+                                                  "verification_note":  "SHA-256 independently verified from the official Google 37.0.1 Windows release archive; source.properties contains Pkg.Revision=37.0.1."
+                                              }
+                       },
+    "locks":  {
+                  "backend":  "requirements/backend.lock",
+                  "dev":  "requirements/dev.lock",
+                  "build":  "requirements/build.lock",
+                  "editable_install":  "python -m pip install --no-build-isolation --no-deps -e ."
+              },
+    "base_source_revision":  "e59b9130eca022bbc065e1c3d21961d1eb6876e5",
+    "source_revision_source":  "Git HEAD recorded at install; RELEASE-MANIFEST.json records the source ZIP revision"
+}

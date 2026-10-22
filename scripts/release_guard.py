@@ -28,6 +28,10 @@ REQUIRED_FILES = (
     "ai_contracts/models.py",
     "frontend/src/App.vue",
     "ops/scrcpy-server-v5.0.1.jar",
+    "compose.prod.yaml",
+    "requirements/backend.lock",
+    "requirements/dev.lock",
+    "requirements/build.lock",
 )
 REQUIRED_DIRS = ("gitd", "ops", "ai_contracts", "frontend", "tests")
 FORBIDDEN_DIRS = {
@@ -43,7 +47,7 @@ FORBIDDEN_NAMES = {
     ".env", "dashboard-auth.json", "settings.key", "settings.enc", "fleet.sqlite3",
 }
 KNOWN_DEPLOYMENT_HOSTS = ("deployment" + "-host.invalid",)
-PRIVATE_PATH_RE = re.compile(r"(?<![\w/])(?:[A-Za-z]:[\\/]+Users[\\/][A-Za-z0-9_.-]+|/home/[A-Za-z0-9_.-]+|/Users/[A-Za-z0-9_.-]+)")
+PRIVATE_PATH_RE = re.compile(r"(?<![\w/])(?:[A-Za-z]:[\\/]+Users[\\/][A-Za-z0-9_.-]+|/" + r"home/[A-Za-z0-9_.-]+|/Users/[A-Za-z0-9_.-]+)")
 PRIVATE_IP_RE = re.compile(r"(?<![\w.])(?:10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?![\w./])")
 PRIVATE_KEY_RE = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")
 SECRET_LITERAL_RE = re.compile(
@@ -98,7 +102,9 @@ def _is_text(path: Path) -> bool:
 
 def _looks_reserved_documentation(line: str) -> bool:
     lowered = line.lower()
-    return any(token in lowered for token in ("example.com", "example.org", "example.net", "192.0.2.", "198.51.100.", "203.0.113.", "<user>", "<your-", "placeholder"))
+    # /home/droid is the fixed non-secret UID home inside the Docker image, not
+    # a developer workstation path. Keep it separate from host-user path checks.
+    return "/home/droid" in lowered or any(token in lowered for token in ("example.com", "example.org", "example.net", "192.0.2.", "198.51.100.", "203.0.113.", "<user>", "<your-", "placeholder"))
 
 
 def _content_findings(root: Path) -> list[Finding]:

@@ -1,0 +1,96 @@
+{
+    "schema_version":  1,
+    "python":  {
+                   "package_min":  "3.10",
+                   "package_max":  "3.12",
+                   "guided":  [
+                                  "3.11",
+                                  "3.12"
+                              ]
+               },
+    "node":  {
+                 "ranges":  [
+                                "20.19.0-20.x",
+                                "\u003e=22.12.0"
+                            ]
+             },
+    "platform_tools":  {
+                           "version":  "37.0.1",
+                           "linux":  {
+                                         "x86_64":  {
+                                                        "archive":  "platform-tools_r37.0.1-linux.zip",
+                                                        "url":  "https://dl.google.com/android/repository/platform-tools_r37.0.1-linux.zip",
+                                                        "sha256":  "d230f13842f60f782a8645f9c813f8f845bf36089ea7289f28c48f17979313f1",
+                                                        "verified":  true,
+                                                        "automatic_download":  true
+                                                    }
+                                     },
+                           "windows":  {
+                                           "x86_64":  {
+                                                          "archive":  "platform-tools_r37.0.1-win.zip",
+                                                          "url":  "https://dl.google.com/android/repository/platform-tools_r37.0.1-win.zip",
+                                                          "sha256":  "45f4d63113e895ebde0c90f194099a4676b6ac653bd28d54314a9e022bbc1a99",
+                                                          "verified":  true,
+                                                          "automatic_download":  true,
+                                                          "verification_note":  "SHA-256 independently verified from the official Google 37.0.1 Windows release archive; source.properties contains Pkg.Revision=37.0.1."
+                                                      }
+                                       }
+                       },
+    "adb":  {
+                "required_commands":  {
+                                          "usb_control":  [
+                                                              "devices",
+                                                              "shell"
+                                                          ],
+                                          "tcp_control":  [
+                                                              "connect",
+                                                              "tcpip"
+                                                          ],
+                                          "wireless_pairing":  [
+                                                                   "pair",
+                                                                   "mdns"
+                                                               ]
+                                      }
+            },
+    "diagnostic_profiles":  {
+                                "native":  {
+                                               "required":  [
+                                                                "python",
+                                                                "node",
+                                                                "npm",
+                                                                "adb"
+                                                            ],
+                                               "optional":  [
+                                                                "scrcpy",
+                                                                "ffmpeg",
+                                                                "ffprobe"
+                                                            ]
+                                           },
+                                "docker-backend":  {
+                                                       "required":  [
+                                                                        "python",
+                                                                        "adb"
+                                                                    ],
+                                                       "optional":  [
+                                                                        "node",
+                                                                        "npm",
+                                                                        "scrcpy",
+                                                                        "ffmpeg",
+                                                                        "ffprobe"
+                                                                    ]
+                                                   },
+                                "docker-frontend":  {
+                                                        "required":  [
+                                                                         "node",
+                                                                         "npm"
+                                                                     ],
+                                                        "optional":  [
+                                                                         "python",
+                                                                         "adb",
+                                                                         "scrcpy",
+                                                                         "ffmpeg",
+                                                                         "ffprobe"
+                                                                     ]
+                                                    }
+                            }
+}

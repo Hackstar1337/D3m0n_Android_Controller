@@ -94,3 +94,58 @@ def test_shell_secrets_do_not_cross_manager_boundary(monkeypatch):
     env=sm.clean_child_environment(55123)
     assert 'UNRELATED_ADMIN_TOKEN' not in env
     assert 'D3M0N_PROVIDER_API_KEY' not in env
+
+
+def test_failed_install_stage_is_retryable_with_mocks(tmp_path):
+    from ops.install_state import new_install_state, stage_complete
+
+    state_path = tmp_path / 'installed.json'
+    state = new_install_state(tmp_path)
+    attempts = []
+
+    def failed(_logger):
+        attempts.append('failed')
+        raise RuntimeError('fixture install failure')
+
+    with pytest.raises(RuntimeError, match='fixture install failure'):
+        sm._install_stage(state, state_path, 'backend_dependencies', 'fixture-fingerprint', failed)
+    assert 'backend_dependencies' not in state['stages']
+
+    output = tmp_path / 'backend.ok'
+
+    def resumed(_logger):
+        attempts.append('resumed')
+        output.write_text('ok', encoding='utf-8')
+
+    sm._install_stage(state, state_path, 'backend_dependencies', 'fixture-fingerprint', resumed,
+                      outputs=[output], output_root=tmp_path)
+    assert attempts == ['failed', 'resumed']
+    assert stage_complete(state, 'backend_dependencies', 'fixture-fingerprint', root=tmp_path)
+
+
+def test_interrupted_frontend_stage_recovery_keeps_previous_dist(tmp_path):
+    root = tmp_path / 'repo'
+    destination = root / 'frontend' / 'dist'
+    destination.mkdir(parents=True)
+    (destination / 'index.html').write_text('previous', encoding='utf-8')
+    runtime = tmp_path / 'runtime'
+    runtime.mkdir()
+    staging = runtime / '.frontend-staged-fixture'
+    staging.mkdir()
+    (staging / 'partial.js').write_text('partial', encoding='utf-8')
+    (runtime / 'frontend-build.json').write_text(json.dumps({
+        'destination': str(destination), 'backup': None, 'staging': str(staging),
+    }), encoding='utf-8')
+
+    sm._frontend_build_recovery(root, runtime)
+
+    assert (destination / 'index.html').read_text(encoding='utf-8') == 'previous'
+    assert not staging.exists()
+    assert not (runtime / 'frontend-build.json').exists()
+
+
+def test_default_backup_refuses_running_supervisor(monkeypatch):
+    monkeypatch.setattr(sm, 'load_record', lambda: {'control_port': 1234, 'control_key': 'fixture'})
+    monkeypatch.setattr(sm, 'control', lambda _record: {'running': True})
+    with pytest.raises(RuntimeError, match='Stop it.*create the backup.*start it again'):
+        sm.backup_state(None, None)
