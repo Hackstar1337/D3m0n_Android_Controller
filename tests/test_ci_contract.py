@@ -28,9 +28,15 @@ def test_release_is_gated_after_native_and_docker_integration():
 
 def test_ci_uses_hashed_locks_and_no_second_resolution():
     text = (ROOT / '.github/workflows/ci.yml').read_text()
-    assert '--require-hashes -r requirements/dev.lock' in text
-    assert '--require-hashes -r requirements/build.lock' in text
-    assert '--no-deps --no-build-isolation -e .' in text
+    assert text.count('python scripts/ci_create_environment.py') == 2
+    assert 'ci_create_environment.py --development' in text
+    helper = (ROOT / 'scripts/ci_create_environment.py').read_text()
+    assert 'venv.EnvBuilder(with_pip=True)' in helper
+    assert "'--require-hashes'" in helper
+    assert "'build.lock'" in helper and "'dev.lock'" in helper
+    assert "'--no-deps', '--no-build-isolation', '-e'" in helper
+    assert "'pip', 'check'" in helper
+    assert 'GITHUB_PATH' in helper
     assert 'pip install pytest' not in text
 
 

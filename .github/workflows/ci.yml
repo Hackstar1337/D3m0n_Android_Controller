@@ -33,11 +33,7 @@ jobs:
         with:
           node-version: '24.x'
       - name: Install verified build and development locks
-        run: |
-          python -m pip install --require-hashes -r requirements/build.lock
-          python -m pip install --require-hashes -r requirements/dev.lock
-          python -m pip install --no-deps --no-build-isolation -e .
-          python -m pip check
+        run: python scripts/ci_create_environment.py --development
       - name: Installation, integrity, and authentication regression tests
         run: >-
           python -m pytest -q
@@ -100,10 +96,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Supply only locked runner dependencies
-        run: |
-          python -m pip install --require-hashes -r requirements/build.lock
-          python -m pip install --require-hashes -r requirements/backend.lock
-          python -m pip install --no-deps --no-build-isolation -e .
+        run: python scripts/ci_create_environment.py
       - name: Actual native install, owned stop, unchanged-stage resume
         run: python scripts/ci_native_install.py
 
