@@ -25,8 +25,8 @@ router = APIRouter(tags=["tests"])
 _tr_runs: dict = {}  # serial -> {proc, log_f, log_path, sr_active, ...}
 _tr_lock = threading.Lock()
 _TESTS_DIR = Path(__file__).parent.parent.parent / "tests"
-_TR_RECORDINGS_DIR = Path(__file__).parent.parent.parent / "test_recordings"
-_TR_RECORDINGS_DIR.mkdir(exist_ok=True)
+from gitd.runtime_paths import runtime_directory
+_TR_RECORDINGS_DIR = runtime_directory('test_recordings', Path(__file__).parent.parent.parent / "test_recordings")
 
 
 def _device_label(serial: str) -> str:

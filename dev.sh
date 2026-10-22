@@ -20,7 +20,7 @@ case "$action" in
   test)
     "${compose[@]}" exec -T frontend npm run type-check
     "${compose[@]}" exec -T frontend npm test
-    "${compose[@]}" exec -T backend python -m pytest -q tests/test_compatibility.py tests/test_docker_setup.py tests/test_docker_lifecycle.py tests/test_setup_manager.py tests/test_install_state.py tests/test_state_backup.py tests/test_guided_install_contract.py tests/test_portable_install.py tests/test_platform_config.py tests/test_ci_contract.py tests/test_release_package.py ops/tests/test_dashboard_auth.py
+    "${compose[@]}" exec -T backend python -m pytest -q tests/test_compatibility.py tests/test_docker_setup.py tests/test_docker_lifecycle.py tests/test_setup_manager.py tests/test_install_state.py tests/test_state_backup.py tests/test_runtime_paths.py tests/test_guided_install_contract.py tests/test_portable_install.py tests/test_platform_config.py tests/test_ci_contract.py tests/test_release_package.py ops/tests/test_dashboard_auth.py
     ;;
   backup|restore) exec "$python_cmd" -m ops.docker_backup "$action" "$@" ;;
   edit) command -v code >/dev/null 2>&1 && exec code D3m0n-Droid.code-workspace || { echo 'Open D3m0n-Droid.code-workspace in your editor.'; } ;;

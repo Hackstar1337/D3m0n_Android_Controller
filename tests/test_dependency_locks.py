@@ -37,3 +37,21 @@ def test_validation_rejects_missing_hash(tmp_path):
     target.write_text('setuptools==84.2.1\n')
     with pytest.raises(ValueError, match='Unhashed'):
         locks.validate_lock(target)
+
+
+def test_build_runtime_overlap_uses_identical_versions():
+    def pins(name):
+        return {match.group(1).lower():match.group(2) for match in locks.STANZA.finditer((ROOT / 'requirements' / name).read_text())}
+    backend, build = pins('backend.lock'), pins('build.lock')
+    for name in backend.keys() & build.keys():
+        assert backend[name] == build[name], f'Build install would overwrite locked runtime dependency: {name}'
+
+
+def test_build_compilation_uses_staged_runtime_constraints(tmp_path, monkeypatch):
+    commands=[]
+    monkeypatch.setattr(locks, 'ROOT', tmp_path)
+    monkeypatch.setattr(locks.subprocess, 'run',lambda command, **kwargs: commands.append(command))
+    output=tmp_path / 'staging' / 'build.lock'
+    locks.compile_lock(output,build=True,upgrade=False)
+    assert '--constraint' in commands[0]
+    assert commands[0][commands[0].index('--constraint')+1] == str(Path('staging') / 'backend.lock')

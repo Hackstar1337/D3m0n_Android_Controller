@@ -73,7 +73,7 @@ def run(root: Path, project: str, *, skip_build: bool = False) -> None:
             subprocess.run([sys.executable,'-m','ops.docker_setup','start','--no-browser','--api-port',str(api),'--ui-port',str(ui)], cwd=root, env=env, check=True)
             cmd(['exec','-T','frontend','npm','run','type-check'])
             cmd(['exec','-T','frontend','npm','test'])
-            tests = ['tests/test_compatibility.py','tests/test_docker_setup.py','tests/test_docker_lifecycle.py','tests/test_setup_manager.py','tests/test_install_state.py','tests/test_state_backup.py','tests/test_release_package.py','tests/test_ci_contract.py','tests/test_guided_install_contract.py','tests/test_portable_install.py','tests/test_platform_config.py','ops/tests/test_dashboard_auth.py']
+            tests = ['tests/test_runtime_paths.py','tests/test_compatibility.py','tests/test_docker_setup.py','tests/test_docker_lifecycle.py','tests/test_setup_manager.py','tests/test_install_state.py','tests/test_state_backup.py','tests/test_release_package.py','tests/test_ci_contract.py','tests/test_guided_install_contract.py','tests/test_portable_install.py','tests/test_platform_config.py','ops/tests/test_dashboard_auth.py']
             cmd(['exec','-T','backend','python','-m','pytest','-q',*tests])
             read_hash = ['exec','-T','backend','python','-c',"import hashlib; from pathlib import Path; print(hashlib.sha256(Path('/state/dashboard-auth.json').read_bytes()).hexdigest())"]
             before = cmd(read_hash, capture_output=True, text=True).stdout.strip()
@@ -93,6 +93,10 @@ def run(root: Path, project: str, *, skip_build: bool = False) -> None:
             if request(f'http://127.0.0.1:{api}/api/auth/unlock', {'password':password})[0] != 200:
                 raise RuntimeError('Fresh dashboard login failed.')
             print(f'CLEAN DOCKER INSTALL ACCEPTED: {project}')
+    except Exception:
+        if started:
+            subprocess.run(compose+['logs','--no-color','--tail','120'], cwd=root, env=env, check=False)
+        raise
     finally:
         if started:
             subprocess.run(compose+['down','--volumes','--remove-orphans'], cwd=root, env=env, check=False)

@@ -79,7 +79,7 @@ switch ($Action) {
         if ($Production) { throw 'Run tests against the development target; production has no frontend test service.' }
         Invoke-Compose @('exec','-T','frontend','npm','run','type-check')
         Invoke-Compose @('exec','-T','frontend','npm','test')
-        Invoke-Compose @('exec','-T','backend','python','-m','pytest','-q','tests/test_compatibility.py','tests/test_docker_setup.py','tests/test_docker_lifecycle.py','tests/test_setup_manager.py','tests/test_install_state.py','tests/test_state_backup.py','tests/test_guided_install_contract.py','tests/test_portable_install.py','tests/test_platform_config.py','tests/test_ci_contract.py','tests/test_release_package.py','ops/tests/test_dashboard_auth.py')
+        Invoke-Compose @('exec','-T','backend','python','-m','pytest','-q','tests/test_compatibility.py','tests/test_docker_setup.py','tests/test_docker_lifecycle.py','tests/test_setup_manager.py','tests/test_install_state.py','tests/test_state_backup.py','tests/test_runtime_paths.py tests/test_guided_install_contract.py','tests/test_portable_install.py','tests/test_platform_config.py','tests/test_ci_contract.py','tests/test_release_package.py','ops/tests/test_dashboard_auth.py')
     }
     { $_ -in 'backup','restore' } {
         if (-not $Archive -or -not $IncludeSecrets) { throw 'Supply -Archive and -IncludeSecrets; private backups contain credentials and ADB identities.' }

@@ -28,7 +28,7 @@ def compile_lock(output: Path, *extras: str, build: bool, upgrade: bool) -> None
     for extra in extras:
         command.extend(['--extra', extra])
     if build:
-        command += ['--all-build-deps', '--only-build-deps']
+        command += ['--all-build-deps', '--only-build-deps', '--constraint', str((output.parent / 'backend.lock').relative_to(ROOT))]
     if upgrade:
         command.append('--upgrade')
     env = os.environ.copy()

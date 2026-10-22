@@ -14,8 +14,8 @@ from gitd.benchmarks.base import Task, TaskResult
 
 log = logging.getLogger(__name__)
 
-RESULTS_DIR = Path(__file__).parent / "results"
-RESULTS_DIR.mkdir(exist_ok=True)
+from gitd.runtime_paths import runtime_directory
+RESULTS_DIR = runtime_directory('benchmark_results', Path(__file__).parent / "results")
 
 # ── Event pub/sub for live SSE streaming ─────────────────────────────────
 

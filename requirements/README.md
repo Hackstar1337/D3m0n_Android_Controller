@@ -23,8 +23,8 @@ python -m pip install --no-build-isolation --no-deps -e .
 
 Install `dev.lock` instead of `backend.lock` when running the installation and
 lint tests. The `ops/install-compatibility.json` manifest is included in the
-`ops` package data by `pyproject.toml`. Install build and runtime locks in separate
-commands: build-tool versions may legitimately differ from runtime pins.
+`ops` package data by `pyproject.toml`. Build and runtime locks have separate roles; shared dependencies must use the same
+version. Build-lock regeneration is constrained by the staged runtime lock.
 
 ## Refreshing locks
 

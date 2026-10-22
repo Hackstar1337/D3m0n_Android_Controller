@@ -13,8 +13,8 @@ from typing import Any
 
 from gitd.bots.common.device import get_device, is_ios_ref
 
-RECORDINGS_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "phone_recordings"
-RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+from gitd.runtime_paths import runtime_directory
+RECORDINGS_DIR = runtime_directory('phone_recordings', Path(__file__).resolve().parent.parent.parent / "data" / "phone_recordings")
 
 _active: dict[str, dict[str, Any]] = {}
 _lock = threading.Lock()

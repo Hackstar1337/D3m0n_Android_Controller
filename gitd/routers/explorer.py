@@ -17,8 +17,8 @@ from gitd.config import settings
 router = APIRouter(prefix="/api/explorer", tags=["explorer"])
 
 _BOT_DEVICE = settings.default_device
-_EXPLORER_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "app_explorer"
-_EXPLORER_DIR.mkdir(parents=True, exist_ok=True)
+from gitd.runtime_paths import runtime_directory
+_EXPLORER_DIR = runtime_directory('app_explorer', Path(__file__).resolve().parent.parent.parent / "data" / "app_explorer")
 _SCRIPT = Path(__file__).resolve().parent.parent / "skills" / "auto_creator.py"
 _PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 

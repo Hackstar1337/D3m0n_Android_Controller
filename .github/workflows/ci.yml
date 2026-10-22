@@ -44,7 +44,7 @@ jobs:
           tests/test_portable_install.py tests/test_platform_config.py
           tests/test_platform_matrix.py tests/test_guided_install_contract.py
           tests/test_ci_contract.py tests/test_cli_doctor.py
-          tests/test_dependency_locks.py ops/tests/test_dashboard_auth.py
+          tests/test_dependency_locks.py tests/test_runtime_paths.py ops/tests/test_dashboard_auth.py
       - name: Real Linux prerequisite plan without mutation
         if: runner.os == 'Linux'
         shell: bash

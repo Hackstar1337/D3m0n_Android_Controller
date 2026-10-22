@@ -36,3 +36,7 @@ backups
 # Interrupted frontend staging (safe to rebuild, never release)
 **/.d3m0n-frontend-staged-*
 **/.d3m0n-dist-backup-*
+
+# Generated legacy artifacts (configured state uses the private volume)
+gitd/benchmarks/results/
+test_recordings/

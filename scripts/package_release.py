@@ -93,6 +93,8 @@ FORBIDDEN_DIRS = {
     "logs",
     "recordings",
     "screenshots",
+    "results",
+    "test_recordings",
     "backups",
     ".work",
 }

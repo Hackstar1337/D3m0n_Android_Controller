@@ -106,3 +106,5 @@ Docker has its own ADB server. Explicitly pair only your or owner-authorized dev
 Fleet AI/Mobilerun retains its separately documented isolated systemd/WSL requirements; a dashboard container is not that runtime. iOS, emulators, local models, Portal, and provider keys remain optional/unconfigured. Do not weaken isolation or authentication to bypass readiness.
 
 Google Platform-Tools 37.0.1 archives are pinned and SHA-256/version checked by the shared installer. The Windows native fallback uses the verified official `win.zip` release alias; Linux uses the verified x86-64 archive. Unsupported architectures fail before download. SDK license notices remain included. See [Google's Platform-Tools notes](https://developer.android.com/tools/releases/platform-tools).
+
+Configured runtime artifacts (explorer data, recordings, and benchmark results) now use the private state directory, not the source mount. With no state override, existing native legacy paths are preserved; no legacy folders are moved or deleted. Back up any legacy native artifacts separately before changing their storage configuration.
