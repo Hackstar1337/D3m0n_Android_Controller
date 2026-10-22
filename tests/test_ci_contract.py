@@ -57,3 +57,15 @@ def test_acceptance_scripts_never_discover_or_control_devices():
         text = (ROOT / 'scripts' / filename).read_text().lower()
         for forbidden in ['adb devices', 'adb pair', 'adb shell', 'nmap', 'start-stream', 'create_job']:
             assert forbidden not in text
+
+
+def test_qoder_test_task_passes_separate_existing_regression_files():
+    import re
+    helper=(ROOT / 'dev.ps1').read_text()
+    files=re.findall(r"'((?:ops/)?tests/[^']+\.py)'",helper)
+    assert 'tests/test_runtime_paths.py' in files
+    assert 'tests/test_guided_install_contract.py' in files
+    assert 'tests/test_dependency_locks.py' in files
+    for filename in files:
+        assert ' ' not in filename, f'Combined test argument: {filename}'
+        assert (ROOT / filename).is_file(), f'Missing test argument: {filename}'
